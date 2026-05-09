@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:proptrack/core/theme/app_colors.dart';
 import 'package:proptrack/core/theme/theme_notifier.dart';
+import 'package:proptrack/features/auth/presentation/providers/auth_notifier.dart';
 import 'package:proptrack/shared/widgets/diagonal_pattern_background.dart';
 
 class RegisterPage extends ConsumerStatefulWidget {
@@ -28,11 +29,33 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     super.dispose();
   }
 
-  void _handleCreateAccount() {
+  Future<void> _handleCreateAccount(WidgetRef ref) async {
     if (!_formKey.currentState!.validate()) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Registration coming soon')),
-    );
+
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    final authNotifier = ref.read(authNotifierProvider.notifier);
+    await authNotifier.signUpWithEmail(email, password);
+
+    if (!mounted) return;
+
+    final authState = ref.read(authNotifierProvider);
+    if (authState == AuthState.authenticated) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Account created! Check your email for verification.'),
+        ),
+      );
+      context.go('/');
+    } else if (authState == AuthState.error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authNotifier.errorMessage ?? 'Sign up failed'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   String? _validateEmail(String? v) {
@@ -219,7 +242,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                               width: double.infinity,
                               height: 52,
                               child: ElevatedButton(
-                                onPressed: _handleCreateAccount,
+                                onPressed: () => _handleCreateAccount(ref),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: isDark
                                       ? AppColors.accent

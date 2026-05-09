@@ -5,38 +5,32 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:proptrack/core/router/app_router.dart';
 import 'package:proptrack/core/theme/app_theme.dart';
 import 'package:proptrack/core/theme/theme_notifier.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:proptrack/features/properties/data/models/property_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
-  // Load environment variables first (before Sentry)
+  // Load environment variables
   await dotenv.load();
 
-  // Wrap app with Sentry for error reporting
-  await SentryFlutter.init(
-    (options) {
-      options.dsn = dotenv.env['SENTRY_DSN'] ?? '';
-      options.tracesSampleRate = 1.0;
-    },
-    appRunner: () async {
-      WidgetsFlutterBinding.ensureInitialized();
+  // Initialize Flutter bindings
+  WidgetsFlutterBinding.ensureInitialized();
 
-      // Initialize Hive for local storage
-      await Hive.initFlutter();
-      await Hive.openBox<dynamic>('settings');
+  // Initialize Hive for local storage
+  await Hive.initFlutter();
+  Hive.registerAdapter(PropertyModelAdapter());
+  await Hive.openBox<dynamic>('settings');
+  await Hive.openBox<dynamic>('properties');
 
-      // Initialise Supabase
-      await Supabase.initialize(
-        url: dotenv.env['SUPABASE_URL']!,
-        anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
-      );
+  // Initialize Supabase
+  await Supabase.initialize(
+    url: dotenv.env['SUPABASE_URL']!,
+    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+  );
 
-      runApp(
-        const ProviderScope(
-          child: PropTrackApp(),
-        ),
-      );
-    },
+  runApp(
+    const ProviderScope(
+      child: PropTrackApp(),
+    ),
   );
 }
 

@@ -1,17 +1,8 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:proptrack/core/errors/failures.dart';
+import 'package:proptrack/features/installments/domain/entities/installment_entity.dart';
 
 abstract interface class InstallmentRepository {
-  Future<Either<Failure, List<Map<String, dynamic>>>> getInstallments({
-    String? propertyId,
-  });
-  Future<Either<Failure, Map<String, dynamic>>> createInstallment(
-    Map<String, dynamic> data,
-  );
-  Future<Either<Failure, Map<String, dynamic>>> updateInstallment(
-    String id,
-    Map<String, dynamic> data,
-  );
-  Future<Either<Failure, Unit>> deleteInstallment(String id);
-  Future<Either<Failure, Unit>> markAsPaid(String id, DateTime paymentDate);
+  Future<Either<Failure, List<InstallmentEntity>>> getByPropertyId(String propertyId);
+  Future<Either<Failure, InstallmentEntity>> togglePaid(String id, bool isPaid);
 }

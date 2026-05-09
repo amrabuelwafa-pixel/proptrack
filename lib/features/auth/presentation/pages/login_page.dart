@@ -27,11 +27,28 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     super.dispose();
   }
 
-  void _handleSignIn() {
+  Future<void> _handleSignIn(WidgetRef ref) async {
     if (!_formKey.currentState!.validate()) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Email sign-in coming soon')),
-    );
+
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    final authNotifier = ref.read(authNotifierProvider.notifier);
+    await authNotifier.signInWithEmail(email, password);
+
+    if (!mounted) return;
+
+    final authState = ref.read(authNotifierProvider);
+    if (authState == AuthState.authenticated) {
+      context.go('/');
+    } else if (authState == AuthState.error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authNotifier.errorMessage ?? 'Sign in failed'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   String? _validateEmail(String? v) {
@@ -72,6 +89,242 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         child: SafeArea(
           child: Stack(
             children: [
+              Column(
+            children: [
+              // Main content centered on screen
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 480),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _LogoBadge(isDark: isDark),
+                            const SizedBox(height: 16),
+                            Text(
+                              'PropTrack',
+                              style: TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.2,
+                                color: isDark ? Colors.white : AppColors.primary,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Your property payments, organized.',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: AppColors.textSecondary,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 24),
+                            // Form card
+                            Container(
+                              decoration: BoxDecoration(
+                                color: isDark ? AppDarkColors.surface : Colors.white,
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Colors.black12,
+                                    blurRadius: 20,
+                                    offset: Offset(0, 8),
+                                  ),
+                                ],
+                              ),
+                              padding: const EdgeInsets.all(24),
+                              child: Form(
+                                key: _formKey,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Google button
+                                    _SocialButton(
+                                      onPressed: isLoading
+                                          ? null
+                                          : authNotifier.signInWithGoogle,
+                                      backgroundColor: Colors.white,
+                                      foregroundColor: const Color(0xFF1A1A2E),
+                                      borderColor: const Color(0xFFE8E8E8),
+                                      icon: const _GoogleIcon(),
+                                      label: 'Continue with Google',
+                                    ),
+                                    const SizedBox(height: 12),
+                                    // Apple button
+                                    _SocialButton(
+                                      onPressed: isLoading ? null : () {},
+                                      backgroundColor: Colors.black,
+                                      foregroundColor: Colors.white,
+                                      borderColor: Colors.black,
+                                      icon: const Icon(
+                                        Icons.apple,
+                                        color: Colors.white,
+                                        size: 22,
+                                      ),
+                                      label: 'Continue with Apple',
+                                    ),
+                                    const SizedBox(height: 20),
+                                    // OR divider
+                                    _OrEmailDivider(isDark: isDark),
+                                    const SizedBox(height: 20),
+                                    // Email label
+                                    _FieldLabel(text: 'Email address', isDark: isDark),
+                                    const SizedBox(height: 8),
+                                    _AuthField(
+                                      controller: _emailController,
+                                      hint: 'you@example.com',
+                                      prefixIcon: Icons.email_outlined,
+                                      isDark: isDark,
+                                      keyboardType: TextInputType.emailAddress,
+                                      enabled: !isLoading,
+                                      validator: _validateEmail,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    // Password row: label + forgot password
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        _FieldLabel(
+                                          text: 'Password',
+                                          isDark: isDark,
+                                        ),
+                                        GestureDetector(
+                                          onTap: isLoading
+                                              ? null
+                                              : () => context.push(
+                                                  AppRoutes.forgotPassword,
+                                                ),
+                                          child: const Text(
+                                            'Forgot password?',
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              color: AppColors.accent,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    _AuthField(
+                                      controller: _passwordController,
+                                      hint: 'Enter your password',
+                                      prefixIcon: Icons.lock_outline,
+                                      isDark: isDark,
+                                      obscureText: !_passwordVisible,
+                                      enabled: !isLoading,
+                                      validator: _validatePassword,
+                                      suffixIcon: IconButton(
+                                        icon: Icon(
+                                          _passwordVisible
+                                              ? Icons.visibility
+                                              : Icons.visibility_off,
+                                          color: AppColors.textSecondary,
+                                          size: 20,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _passwordVisible = !_passwordVisible;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(height: 24),
+                                    // Sign In button
+                                    SizedBox(
+                                      width: double.infinity,
+                                      height: 52,
+                                      child: ElevatedButton(
+                                        onPressed: isLoading ? null : () => _handleSignIn(ref),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: isDark
+                                              ? AppColors.accent
+                                              : AppColors.primary,
+                                          foregroundColor: Colors.white,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          elevation: 0,
+                                        ),
+                                        child: isLoading
+                                            ? const SizedBox(
+                                              height: 20,
+                                              width: 20,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                color: Colors.white,
+                                              ),
+                                            )
+                                            : const Text(
+                                              'Sign In',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 20),
+                                    // Sign Up link
+                                    Center(
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            "Don't have an account? ",
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: isDark
+                                                  ? AppDarkColors.textSecondary
+                                                  : AppColors.textSecondary,
+                                            ),
+                                          ),
+                                          GestureDetector(
+                                            onTap: isLoading
+                                                ? null
+                                                : () => context.push(AppRoutes.register),
+                                            child: const Text(
+                                              'Sign Up',
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold,
+                                                color: AppColors.accent,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              // Footer
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Text(
+                  'PropTrack © 2026',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark
+                        ? AppDarkColors.textSecondary
+                        : AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            ],
+              ), // Column
               // Theme toggle in top-right corner
               Positioned(
                 top: 4,
@@ -85,238 +338,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   onPressed: ref.read(themeModeProvider.notifier).toggle,
                 ),
               ),
-              // Main scrollable content
-              SingleChildScrollView(
-                padding: const EdgeInsets.only(top: 16, bottom: 32),
-                child: Align(
-                  alignment: Alignment.topCenter,
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 480),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Column(
-                  children: [
-                    const SizedBox(height: 32),
-                    _LogoBadge(isDark: isDark),
-                    const SizedBox(height: 16),
-                    Text(
-                      'PropTrack',
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.2,
-                        color: isDark ? Colors.white : AppColors.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Your property payments, organized.',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textSecondary,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
-                    // Form card
-                    Container(
-                      decoration: BoxDecoration(
-                        color: isDark ? AppDarkColors.surface : Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 20,
-                            offset: Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      padding: const EdgeInsets.all(24),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Google button
-                            _SocialButton(
-                              onPressed: isLoading
-                                  ? null
-                                  : authNotifier.signInWithGoogle,
-                              backgroundColor: Colors.white,
-                              foregroundColor: const Color(0xFF1A1A2E),
-                              borderColor: const Color(0xFFE8E8E8),
-                              icon: const _GoogleIcon(),
-                              label: 'Continue with Google',
-                            ),
-                            const SizedBox(height: 12),
-                            // Apple button
-                            _SocialButton(
-                              onPressed: isLoading ? null : () {},
-                              backgroundColor: Colors.black,
-                              foregroundColor: Colors.white,
-                              borderColor: Colors.black,
-                              icon: const Icon(
-                                Icons.apple,
-                                color: Colors.white,
-                                size: 22,
-                              ),
-                              label: 'Continue with Apple',
-                            ),
-                            const SizedBox(height: 20),
-                            // OR divider
-                            _OrEmailDivider(isDark: isDark),
-                            const SizedBox(height: 20),
-                            // Email label
-                            _FieldLabel(text: 'Email address', isDark: isDark),
-                            const SizedBox(height: 8),
-                            _AuthField(
-                              controller: _emailController,
-                              hint: 'you@example.com',
-                              prefixIcon: Icons.email_outlined,
-                              isDark: isDark,
-                              keyboardType: TextInputType.emailAddress,
-                              enabled: !isLoading,
-                              validator: _validateEmail,
-                            ),
-                            const SizedBox(height: 16),
-                            // Password row: label + forgot password
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                _FieldLabel(
-                                  text: 'Password',
-                                  isDark: isDark,
-                                ),
-                                GestureDetector(
-                                  onTap: isLoading
-                                      ? null
-                                      : () => context.push(
-                                          AppRoutes.forgotPassword,
-                                        ),
-                                  child: const Text(
-                                    'Forgot password?',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: AppColors.accent,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            _AuthField(
-                              controller: _passwordController,
-                              hint: 'Enter your password',
-                              prefixIcon: Icons.lock_outline,
-                              isDark: isDark,
-                              obscureText: !_passwordVisible,
-                              enabled: !isLoading,
-                              validator: _validatePassword,
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _passwordVisible
-                                      ? Icons.visibility
-                                      : Icons.visibility_off,
-                                  color: AppColors.textSecondary,
-                                  size: 20,
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    _passwordVisible = !_passwordVisible;
-                                  });
-                                },
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            // Sign In button
-                            SizedBox(
-                              width: double.infinity,
-                              height: 52,
-                              child: ElevatedButton(
-                                onPressed: isLoading ? null : _handleSignIn,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: isDark
-                                      ? AppColors.accent
-                                      : AppColors.primary,
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  elevation: 0,
-                                ),
-                                child: isLoading
-                                    ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                    : const Text(
-                                      'Sign In',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            // Sign Up link
-                            Center(
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    "Don't have an account? ",
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: isDark
-                                          ? AppDarkColors.textSecondary
-                                          : AppColors.textSecondary,
-                                    ),
-                                  ),
-                                  GestureDetector(
-                                    onTap: isLoading
-                                        ? null
-                                        : () => context.push(AppRoutes.register),
-                                    child: const Text(
-                                      'Sign Up',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColors.accent,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    // Footer
-                    Text(
-                      'PropTrack © 2026',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isDark
-                            ? AppDarkColors.textSecondary
-                            : AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                  ],
-                ), // Column
-              ), // Padding
-            ), // ConstrainedBox
-          ), // Align
-        ), // SingleChildScrollView
-            ], // Stack children
+            ],
           ), // Stack
         ), // SafeArea
       ), // DiagonalPatternBackground
