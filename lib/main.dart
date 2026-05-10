@@ -10,22 +10,40 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
   try {
-    // Load environment variables
-    await dotenv.load();
-
     // Initialize Flutter bindings
     WidgetsFlutterBinding.ensureInitialized();
 
-    // Initialize Hive for local storage
-    await Hive.initFlutter();
-    Hive.registerAdapter(PropertyModelAdapter());
-    await Hive.openBox<dynamic>('settings');
-    await Hive.openBox<dynamic>('properties');
+    // Load environment variables (may fail on web)
+    try {
+      await dotenv.load();
+    } on Exception catch (e) {
+      debugPrint('Warning: Could not load .env file: $e');
+    }
+
+    // Initialize Hive for local storage (skip on web)
+    try {
+      await Hive.initFlutter();
+      Hive.registerAdapter(PropertyModelAdapter());
+      await Hive.openBox<dynamic>('settings');
+      await Hive.openBox<dynamic>('properties');
+    } on Exception catch (e) {
+      debugPrint('Warning: Could not initialize Hive: $e');
+    }
+
+    // Get Supabase credentials from .env or environment
+    final supabaseUrl = dotenv.env['SUPABASE_URL'] ??
+        const String.fromEnvironment('SUPABASE_URL');
+    final supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'] ??
+        const String.fromEnvironment('SUPABASE_ANON_KEY');
+
+    if (supabaseUrl.isEmpty || supabaseAnonKey.isEmpty) {
+      throw Exception('Missing Supabase credentials. Check .env file or environment variables.');
+    }
 
     // Initialize Supabase
     await Supabase.initialize(
-      url: dotenv.env['SUPABASE_URL']!,
-      anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+      url: supabaseUrl,
+      anonKey: supabaseAnonKey,
     );
 
     runApp(

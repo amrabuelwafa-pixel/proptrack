@@ -59,5 +59,6 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/fonts/
+    - web/assets/.env
 
   # fonts: (add custom fonts in Sprint 1)
