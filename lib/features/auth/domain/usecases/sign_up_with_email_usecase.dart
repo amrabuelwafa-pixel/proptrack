@@ -8,6 +8,10 @@ class SignUpWithEmailUseCase {
 
   final AuthRepository _repository;
 
-  Future<Either<Failure, User>> call(String email, String password) =>
-      _repository.signUpWithEmail(email, password);
+  Future<Either<Failure, User>> call(
+    String email,
+    String password,
+    String fullName,
+  ) =>
+      _repository.signUpWithEmailPassword(email, password, fullName);
 }

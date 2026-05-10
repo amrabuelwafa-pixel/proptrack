@@ -15,6 +15,7 @@ class RegisterPage extends ConsumerStatefulWidget {
 
 class _RegisterPageState extends ConsumerState<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
+  final _fullNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
@@ -23,6 +24,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
   @override
   void dispose() {
+    _fullNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmController.dispose();
@@ -32,11 +34,12 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   Future<void> _handleCreateAccount(WidgetRef ref) async {
     if (!_formKey.currentState!.validate()) return;
 
+    final fullName = _fullNameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
     final authNotifier = ref.read(authNotifierProvider.notifier);
-    await authNotifier.signUpWithEmail(email, password);
+    await authNotifier.signUpWithEmail(email, password, fullName);
 
     if (!mounted) return;
 
@@ -49,6 +52,12 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         ),
       );
     }
+  }
+
+  String? _validateFullName(String? v) {
+    if (v == null || v.trim().isEmpty) return 'Full name is required';
+    if (v.trim().length < 2) return 'Name must be at least 2 characters';
+    return null;
   }
 
   String? _validateEmail(String? v) {
@@ -301,6 +310,19 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                               ),
                             ),
                             const SizedBox(height: 24),
+                            _FieldLabel(
+                              text: 'Full name',
+                              isDark: isDark,
+                            ),
+                            const SizedBox(height: 8),
+                            _AuthField(
+                              controller: _fullNameController,
+                              hint: 'John Doe',
+                              prefixIcon: Icons.person_outline,
+                              isDark: isDark,
+                              validator: _validateFullName,
+                            ),
+                            const SizedBox(height: 16),
                             _FieldLabel(
                               text: 'Email address',
                               isDark: isDark,

@@ -67,9 +67,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
     );
   }
 
-  Future<void> signUpWithEmail(String email, String password) async {
+  Future<void> signUpWithEmail(
+    String email,
+    String password,
+    String fullName,
+  ) async {
     state = AuthState.loading;
-    final result = await signUpWithEmailUseCase.call(email, password);
+    final result = await signUpWithEmailUseCase.call(email, password, fullName);
     result.fold(
       (Failure failure) {
         _errorMessage = failure.message;

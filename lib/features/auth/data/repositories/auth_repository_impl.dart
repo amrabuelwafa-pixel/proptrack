@@ -10,48 +10,52 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl(this._remoteDataSource);
 
   @override
+  Stream<AuthState> get authStateChanges =>
+      _remoteDataSource.authStateChanges;
+
+  @override
+  User? get currentUser => _remoteDataSource.currentUser;
+
+  @override
+  Future<Either<Failure, User>> signInWithEmailPassword(
+    String email,
+    String password,
+  ) async {
+    try {
+      final user = await _remoteDataSource.signInWithEmailPassword(
+        email,
+        password,
+      );
+      return Right(user);
+    } catch (e) {
+      final message = e is AuthException ? e.message : e.toString();
+      return Left(AuthFailure(message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, User>> signUpWithEmailPassword(
+    String email,
+    String password,
+    String fullName,
+  ) async {
+    try {
+      final user = await _remoteDataSource.signUpWithEmailPassword(
+        email,
+        password,
+        fullName,
+      );
+      return Right(user);
+    } catch (e) {
+      final message = e is AuthException ? e.message : e.toString();
+      return Left(AuthFailure(message));
+    }
+  }
+
+  @override
   Future<Either<Failure, User>> signInWithGoogle() async {
     try {
       final user = await _remoteDataSource.signInWithGoogle();
-      return Right(user);
-    } catch (e) {
-      final message = e is AuthException ? e.message : e.toString();
-      return Left(AuthFailure(message));
-    }
-  }
-
-  @override
-  Future<Either<Failure, User>> signInWithApple() async {
-    try {
-      final user = await _remoteDataSource.signInWithApple();
-      return Right(user);
-    } catch (e) {
-      final message = e is AuthException ? e.message : e.toString();
-      return Left(AuthFailure(message));
-    }
-  }
-
-  @override
-  Future<Either<Failure, User>> signInWithEmail(
-    String email,
-    String password,
-  ) async {
-    try {
-      final user = await _remoteDataSource.signInWithEmail(email, password);
-      return Right(user);
-    } catch (e) {
-      final message = e is AuthException ? e.message : e.toString();
-      return Left(AuthFailure(message));
-    }
-  }
-
-  @override
-  Future<Either<Failure, User>> signUpWithEmail(
-    String email,
-    String password,
-  ) async {
-    try {
-      final user = await _remoteDataSource.signUpWithEmail(email, password);
       return Right(user);
     } catch (e) {
       final message = e is AuthException ? e.message : e.toString();
@@ -80,11 +84,4 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(AuthFailure(message));
     }
   }
-
-  @override
-  Stream<AuthState> get authStateChanges =>
-      _remoteDataSource.authStateChanges;
-
-  @override
-  User? get currentUser => _remoteDataSource.currentUser;
 }

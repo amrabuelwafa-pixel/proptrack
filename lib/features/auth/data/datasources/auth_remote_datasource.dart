@@ -1,15 +1,17 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-
 abstract interface class AuthRemoteDataSource {
-  Future<User> signInWithGoogle();
-  Future<User> signInWithApple();
-  Future<User> signInWithEmail(String email, String password);
-  Future<User> signUpWithEmail(String email, String password);
-  Future<void> resetPasswordForEmail(String email);
-  Future<void> signOut();
   Stream<AuthState> get authStateChanges;
   User? get currentUser;
+  Future<User> signInWithEmailPassword(String email, String password);
+  Future<User> signUpWithEmailPassword(
+    String email,
+    String password,
+    String fullName,
+  );
+  Future<User> signInWithGoogle();
+  Future<void> signOut();
+  Future<void> resetPasswordForEmail(String email);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -18,43 +20,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   AuthRemoteDataSourceImpl(this._supabaseClient);
 
   @override
-  Future<User> signInWithGoogle() async {
-    final redirectUrl = _getRedirectUrl();
-    await _supabaseClient.auth.signInWithOAuth(
-      OAuthProvider.google,
-      redirectTo: redirectUrl,
-    );
-    return _supabaseClient.auth.currentUser!;
-  }
+  Stream<AuthState> get authStateChanges =>
+      _supabaseClient.auth.onAuthStateChange;
 
   @override
-  Future<User> signInWithApple() async {
-    final redirectUrl = _getRedirectUrl();
-    await _supabaseClient.auth.signInWithOAuth(
-      OAuthProvider.apple,
-      redirectTo: redirectUrl,
-    );
-    return _supabaseClient.auth.currentUser!;
-  }
-
-  String _getRedirectUrl() {
-    const isWeb = bool.fromEnvironment('dart.library.html');
-    if (isWeb) {
-      return '${Uri.base.origin}/auth/callback';
-    }
-    return 'com.example.proptrack://login-callback';
-  }
-
-  String _getResetRedirectUrl() {
-    const isWeb = bool.fromEnvironment('dart.library.html');
-    if (isWeb) {
-      return '${Uri.base.origin}/auth/callback';
-    }
-    return 'com.example.proptrack://login-callback';
-  }
+  User? get currentUser => _supabaseClient.auth.currentUser;
 
   @override
-  Future<User> signInWithEmail(String email, String password) async {
+  Future<User> signInWithEmailPassword(String email, String password) async {
     await _supabaseClient.auth.signInWithPassword(
       email: email,
       password: password,
@@ -63,21 +36,27 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<User> signUpWithEmail(String email, String password) async {
+  Future<User> signUpWithEmailPassword(
+    String email,
+    String password,
+    String fullName,
+  ) async {
     final response = await _supabaseClient.auth.signUp(
       email: email,
       password: password,
-      emailRedirectTo: _getResetRedirectUrl(),
+      data: {'full_name': fullName},
+      emailRedirectTo: 'io.supabase.proptrack://login-callback/',
     );
     return response.user!;
   }
 
   @override
-  Future<void> resetPasswordForEmail(String email) async {
-    await _supabaseClient.auth.resetPasswordForEmail(
-      email,
-      redirectTo: _getResetRedirectUrl(),
+  Future<User> signInWithGoogle() async {
+    await _supabaseClient.auth.signInWithOAuth(
+      OAuthProvider.google,
+      redirectTo: 'io.supabase.proptrack://login-callback/',
     );
+    return _supabaseClient.auth.currentUser!;
   }
 
   @override
@@ -86,9 +65,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Stream<AuthState> get authStateChanges =>
-      _supabaseClient.auth.onAuthStateChange;
-
-  @override
-  User? get currentUser => _supabaseClient.auth.currentUser;
+  Future<void> resetPasswordForEmail(String email) async {
+    await _supabaseClient.auth.resetPasswordForEmail(
+      email,
+      redirectTo: 'io.supabase.proptrack://reset-password/',
+    );
+  }
 }

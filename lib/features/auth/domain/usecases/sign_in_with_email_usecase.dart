@@ -9,5 +9,5 @@ class SignInWithEmailUseCase {
   final AuthRepository _repository;
 
   Future<Either<Failure, User>> call(String email, String password) =>
-      _repository.signInWithEmail(email, password);
+      _repository.signInWithEmailPassword(email, password);
 }
