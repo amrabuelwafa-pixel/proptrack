@@ -25,19 +25,24 @@ GoRouter appRouter(AppRouterRef ref) {
 
   return GoRouter(
     redirect: (context, state) async {
-      final currentUser = Supabase.instance.client.auth.currentUser;
-      final isLoggedIn = currentUser != null;
-      final isOnPublicRoute = publicRoutes.contains(state.uri.path);
+      try {
+        final currentUser = Supabase.instance.client.auth.currentUser;
+        final isLoggedIn = currentUser != null;
+        final isOnPublicRoute = publicRoutes.contains(state.uri.path);
 
-      if (!isLoggedIn && !isOnPublicRoute) {
+        if (!isLoggedIn && !isOnPublicRoute) {
+          return AppRoutes.login;
+        }
+
+        if (isLoggedIn && state.uri.path == AppRoutes.login) {
+          return AppRoutes.dashboard;
+        }
+
+        return null;
+      } on Exception catch (e) {
+        debugPrint('Router redirect error: $e');
         return AppRoutes.login;
       }
-
-      if (isLoggedIn && state.uri.path == AppRoutes.login) {
-        return AppRoutes.dashboard;
-      }
-
-      return null;
     },
     routes: [
       GoRoute(

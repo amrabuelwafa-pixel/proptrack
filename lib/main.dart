@@ -9,29 +9,36 @@ import 'package:proptrack/features/properties/data/models/property_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
-  // Load environment variables
-  await dotenv.load();
+  try {
+    // Load environment variables
+    await dotenv.load();
 
-  // Initialize Flutter bindings
-  WidgetsFlutterBinding.ensureInitialized();
+    // Initialize Flutter bindings
+    WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Hive for local storage
-  await Hive.initFlutter();
-  Hive.registerAdapter(PropertyModelAdapter());
-  await Hive.openBox<dynamic>('settings');
-  await Hive.openBox<dynamic>('properties');
+    // Initialize Hive for local storage
+    await Hive.initFlutter();
+    Hive.registerAdapter(PropertyModelAdapter());
+    await Hive.openBox<dynamic>('settings');
+    await Hive.openBox<dynamic>('properties');
 
-  // Initialize Supabase
-  await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL']!,
-    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
-  );
+    // Initialize Supabase
+    await Supabase.initialize(
+      url: dotenv.env['SUPABASE_URL']!,
+      anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+    );
 
-  runApp(
-    const ProviderScope(
-      child: PropTrackApp(),
-    ),
-  );
+    runApp(
+      const ProviderScope(
+        child: PropTrackApp(),
+      ),
+    );
+  } catch (e, stackTrace) {
+    // Log error for debugging
+    debugPrint('Fatal error during app initialization: $e');
+    debugPrint('StackTrace: $stackTrace');
+    rethrow;
+  }
 }
 
 class PropTrackApp extends ConsumerWidget {
