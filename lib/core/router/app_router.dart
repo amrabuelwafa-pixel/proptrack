@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:proptrack/core/router/route_names.dart';
+import 'package:proptrack/features/auth/presentation/pages/forgot_password_page.dart';
 import 'package:proptrack/features/auth/presentation/pages/login_page.dart';
 import 'package:proptrack/features/auth/presentation/pages/oauth_callback_page.dart';
 import 'package:proptrack/features/auth/presentation/pages/register_page.dart';
@@ -57,9 +58,7 @@ GoRouter appRouter(AppRouterRef ref) {
       GoRoute(
         path: AppRoutes.forgotPassword,
         name: 'forgotPassword',
-        builder: (context, state) => const Scaffold(
-          body: Center(child: Text('Forgot Password — Coming Soon')),
-        ),
+        builder: (context, state) => const ForgotPasswordPage(),
       ),
       GoRoute(
         path: AppRoutes.dashboard,

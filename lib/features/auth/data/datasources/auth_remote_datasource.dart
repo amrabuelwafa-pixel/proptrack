@@ -6,6 +6,7 @@ abstract interface class AuthRemoteDataSource {
   Future<User> signInWithApple();
   Future<User> signInWithEmail(String email, String password);
   Future<User> signUpWithEmail(String email, String password);
+  Future<void> resetPasswordForEmail(String email);
   Future<void> signOut();
   Stream<AuthState> get authStateChanges;
   User? get currentUser;
@@ -44,6 +45,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     return 'com.example.proptrack://login-callback';
   }
 
+  String _getResetRedirectUrl() {
+    const isWeb = bool.fromEnvironment('dart.library.html');
+    if (isWeb) {
+      return '${Uri.base.origin}/auth/callback';
+    }
+    return 'com.example.proptrack://login-callback';
+  }
+
   @override
   Future<User> signInWithEmail(String email, String password) async {
     await _supabaseClient.auth.signInWithPassword(
@@ -58,8 +67,17 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     final response = await _supabaseClient.auth.signUp(
       email: email,
       password: password,
+      emailRedirectTo: _getResetRedirectUrl(),
     );
     return response.user!;
+  }
+
+  @override
+  Future<void> resetPasswordForEmail(String email) async {
+    await _supabaseClient.auth.resetPasswordForEmail(
+      email,
+      redirectTo: _getResetRedirectUrl(),
+    );
   }
 
   @override

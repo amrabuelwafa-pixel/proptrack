@@ -41,14 +41,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     if (!mounted) return;
 
     final authState = ref.read(authNotifierProvider);
-    if (authState == AuthState.authenticated) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Account created! Check your email for verification.'),
-        ),
-      );
-      context.go('/');
-    } else if (authState == AuthState.error) {
+    if (authState == AuthState.error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(authNotifier.errorMessage ?? 'Sign up failed'),
@@ -81,6 +74,143 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final themeMode = ref.watch(themeModeProvider);
+    final authState = ref.watch(authNotifierProvider);
+
+    if (authState == AuthState.signupPending) {
+      return Scaffold(
+        body: DiagonalPatternBackground(
+          child: SafeArea(
+            child: Stack(
+              children: [
+                Positioned(
+                  top: 4,
+                  right: 8,
+                  child: IconButton(
+                    icon: Icon(
+                      themeMode == ThemeMode.dark
+                          ? Icons.wb_sunny_outlined
+                          : Icons.nightlight_round,
+                    ),
+                    onPressed: ref.read(themeModeProvider.notifier).toggle,
+                  ),
+                ),
+                Column(
+                  children: [
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 480),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 16,
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const SizedBox(height: 32),
+                                  Container(
+                                    width: 80,
+                                    height: 80,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.accent.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.mark_email_read_outlined,
+                                      color: AppColors.accent,
+                                      size: 40,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  Text(
+                                    'Check your email!',
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: isDark
+                                          ? Colors.white
+                                          : AppColors.primary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'We sent a confirmation link to\n${_emailController.text}',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: isDark
+                                          ? const Color(0xFF9CA3AF)
+                                          : AppColors.textSecondary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Click the link in the email to activate your account.',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: isDark
+                                          ? const Color(0xFF6B7280)
+                                          : const Color(0xFF9CA3AF),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 32),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    height: 52,
+                                    child: ElevatedButton(
+                                      onPressed: () => context.pop(),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: isDark
+                                            ? AppColors.accent
+                                            : AppColors.primary,
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                        elevation: 0,
+                                      ),
+                                      child: const Text(
+                                        'Back to Sign In',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Text(
+                        'PropTrack © 2026',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark
+                              ? const Color(0xFF4B5563)
+                              : AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       body: DiagonalPatternBackground(

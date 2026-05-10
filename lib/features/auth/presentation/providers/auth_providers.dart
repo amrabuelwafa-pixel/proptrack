@@ -3,6 +3,7 @@ import 'package:proptrack/core/providers/supabase_provider.dart';
 import 'package:proptrack/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:proptrack/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:proptrack/features/auth/domain/repositories/auth_repository.dart';
+import 'package:proptrack/features/auth/domain/usecases/reset_password_usecase.dart';
 import 'package:proptrack/features/auth/domain/usecases/sign_in_with_email_usecase.dart';
 import 'package:proptrack/features/auth/domain/usecases/sign_in_with_google_usecase.dart';
 import 'package:proptrack/features/auth/domain/usecases/sign_out_usecase.dart';
@@ -37,6 +38,11 @@ final signUpWithEmailUseCaseProvider = Provider<SignUpWithEmailUseCase>((ref) {
 final signOutUseCaseProvider = Provider<SignOutUseCase>((ref) {
   final repository = ref.watch(authRepositoryProvider);
   return SignOutUseCase(repository);
+});
+
+final resetPasswordUseCaseProvider = Provider<ResetPasswordUseCase>((ref) {
+  final repository = ref.watch(authRepositoryProvider);
+  return ResetPasswordUseCase(repository);
 });
 
 final authStateProvider = StreamProvider<AuthState>((ref) {
