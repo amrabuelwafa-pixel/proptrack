@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:proptrack/core/theme/app_colors.dart';
 import 'package:proptrack/core/theme/app_text_styles.dart';
 
+const Color _navyBlue = Color(0xFF1A2B4A);
+
 abstract final class AppTheme {
   static ThemeData get light => ThemeData(
     useMaterial3: true,
@@ -18,6 +20,18 @@ abstract final class AppTheme {
     ),
     scaffoldBackgroundColor: AppColors.background,
     dividerColor: AppColors.divider,
+    appBarTheme: const AppBarTheme(
+      backgroundColor: _navyBlue,
+      foregroundColor: Colors.white,
+      elevation: 0,
+      centerTitle: false,
+      titleTextStyle: TextStyle(
+        color: Colors.white,
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+      ),
+      iconTheme: IconThemeData(color: Colors.white),
+    ),
     cardTheme: CardThemeData(
       color: AppColors.surface,
       elevation: 3,
@@ -152,6 +166,18 @@ abstract final class AppTheme {
     ),
     scaffoldBackgroundColor: AppDarkColors.background,
     dividerColor: AppDarkColors.divider,
+    appBarTheme: const AppBarTheme(
+      backgroundColor: _navyBlue,
+      foregroundColor: Colors.white,
+      elevation: 0,
+      centerTitle: false,
+      titleTextStyle: TextStyle(
+        color: Colors.white,
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+      ),
+      iconTheme: IconThemeData(color: Colors.white),
+    ),
     cardTheme: CardThemeData(
       color: AppDarkColors.surface,
       elevation: 4,

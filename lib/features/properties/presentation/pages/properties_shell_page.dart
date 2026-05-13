@@ -19,9 +19,8 @@ class PropertiesShellPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Properties'),
-        centerTitle: true,
+        centerTitle: false,
         elevation: 0,
-        backgroundColor: Colors.white,
       ),
       body: propertiesAsync.when(
         loading: () => _buildShimmerLoader(),
