@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:proptrack/core/theme/app_colors.dart';
 import 'package:proptrack/features/properties/domain/entities/property_entity.dart';
 import 'package:proptrack/features/properties/domain/repositories/property_repository.dart';
 import 'package:proptrack/features/properties/presentation/providers/property_providers.dart';
 
 const Color _navyBlue = Color(0xFF1A2B4A);
+const Color _bgGrey = Color(0xFFF5F6FA);
 
 class PropertiesPage extends ConsumerStatefulWidget {
   const PropertiesPage({super.key});
@@ -33,15 +33,26 @@ class _PropertiesPageState extends ConsumerState<PropertiesPage> {
     final propertiesAsync = ref.watch(propertyNotifierProvider);
 
     return Scaffold(
+      backgroundColor: _bgGrey,
       appBar: AppBar(
         backgroundColor: _navyBlue,
         elevation: 0,
         title: const Text(
           'Properties',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
+          ),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              // Could open a full-screen search page
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => ref.refresh(propertyNotifierProvider),
@@ -85,10 +96,17 @@ class _PropertiesPageState extends ConsumerState<PropertiesPage> {
                   controller: _searchController,
                   decoration: InputDecoration(
                     hintText: 'Search properties...',
-                    prefixIcon: const Icon(Icons.search),
+                    prefixIcon: const Icon(Icons.search, color: Colors.grey),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.transparent),
                     ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.transparent),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
                     contentPadding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                   onChanged: (value) {
@@ -115,7 +133,7 @@ class _PropertiesPageState extends ConsumerState<PropertiesPage> {
               else
                 Expanded(
                   child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     itemCount: filteredProperties.length,
                     itemBuilder: (context, index) {
                       final property = filteredProperties[index];
@@ -129,8 +147,9 @@ class _PropertiesPageState extends ConsumerState<PropertiesPage> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: _navyBlue,
+        shape: const CircleBorder(),
         onPressed: () => _showAddPropertySheet(context),
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, size: 28),
       ),
     );
   }
@@ -141,19 +160,20 @@ class _PropertiesPageState extends ConsumerState<PropertiesPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 80,
-            height: 80,
+            width: 100,
+            height: 100,
             decoration: BoxDecoration(
               color: const Color(0xFFE3F2FD),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.domain, size: 40, color: Color(0xFF1976D2)),
+            child: const Icon(Icons.domain, size: 50, color: Color(0xFF1976D2)),
           ),
           const SizedBox(height: 24),
           Text(
             'No properties yet',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
+                  color: _navyBlue,
                 ),
           ),
           const SizedBox(height: 8),
@@ -174,6 +194,9 @@ class _PropertiesPageState extends ConsumerState<PropertiesPage> {
                 backgroundColor: _navyBlue,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
           ),
@@ -196,7 +219,7 @@ class _PropertiesPageState extends ConsumerState<PropertiesPage> {
 class _PropertyCard extends ConsumerWidget {
   final PropertyEntity property;
 
-  const _PropertyCard({required this.property});
+  const _PropertyCard({required this.property,});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -206,7 +229,9 @@ class _PropertyCard extends ConsumerWidget {
 
     String getStatusText() {
       if (property.totalInstallments == 0) return 'Not Started';
-      if (property.paidInstallments >= property.totalInstallments) return 'Completed';
+      if (property.paidInstallments >= property.totalInstallments) {
+        return 'Completed';
+      }
 
       final handoverDate = property.handoverDate;
       if (handoverDate != null) {
@@ -219,121 +244,223 @@ class _PropertyCard extends ConsumerWidget {
 
     Color getStatusColor() {
       final status = getStatusText();
-      if (status == 'Completed') return AppColors.success;
-      if (status == 'Overdue') return AppColors.error;
-      if (status == 'Due Soon') return Colors.orange;
-      return AppColors.accent;
+      if (status == 'Completed') return const Color(0xFF059669);
+      if (status == 'Overdue') return const Color(0xFFD32F2F);
+      if (status == 'Due Soon') return const Color(0xFFF97316);
+      if (status == 'Paying') return const Color(0xFF2E86AB);
+      return const Color(0xFF2E86AB);
     }
 
-    return Card(
+    Color getProgressColor() => getStatusColor();
+
+    final formattedPrice = NumberFormat('#,##0.00').format(property.totalPrice);
+
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
-        onTap: () => context.push('/properties/${property.id}'),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header: Name and Status Badge
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      property.name,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: getStatusColor().withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Text(
-                      getStatusText(),
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: getStatusColor(),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => context.push('/properties/${property.id}'),
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Left border accent
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 4,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: _navyBlue,
+                        borderRadius: BorderRadius.circular(2),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-
-              // Developer and Location
-              if (property.developer != null || property.location != null)
-                Text(
-                  [property.developer, property.location]
-                      .whereType<String>()
-                      .join(' • '),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[600],
-                      ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              const SizedBox(height: 12),
-
-              // Total Price
-              Text(
-                '${property.currency} ${property.totalPrice.toStringAsFixed(2)}',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: _navyBlue,
-                    ),
-              ),
-              const SizedBox(height: 12),
-
-              // Progress Bar
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        LinearProgressIndicator(
-                          value: progress,
-                          minHeight: 8,
-                          backgroundColor: Colors.grey[200],
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            progress == 1.0 ? AppColors.success : _navyBlue,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${property.paidInstallments}/${property.totalInstallments} installments paid',
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                color: Colors.grey[600],
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Property Name and Status Badge
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  property.name,
+                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                        color: _navyBlue,
+                                      ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
-                        ),
-                      ],
+                              const SizedBox(width: 12),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: getStatusColor().withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  getStatusText(),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: getStatusColor(),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          // Developer and Location
+                          if (property.developer != null || property.location != null)
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.location_on,
+                                  size: 14,
+                                  color: Colors.grey,
+                                ),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    [property.developer, property.location]
+                                        .whereType<String>()
+                                        .join(' • '),
+                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                          color: Colors.grey[600],
+                                          fontSize: 13,
+                                        ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
+                  ],
+                ),
+                const SizedBox(height: 16),
 
-              // Handover Date Chip
-              if (property.handoverDate != null)
+                // Price Row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '${property.currency} $formattedPrice',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: _navyBlue,
+                            fontSize: 16,
+                          ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+
+                // Progress Section with Grey Background
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(16),
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Text(
-                    'Handover: ${DateFormat('MMM d, yyyy').format(property.handoverDate!)}',
-                    style: Theme.of(context).textTheme.labelSmall,
+                  child: Column(
+                    children: [
+                      // Label and percentage
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Installments',
+                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                  color: Colors.grey[700],
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                          Text(
+                            '${property.paidInstallments}/${property.totalInstallments} paid',
+                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  color: Colors.grey[600],
+                                ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      // Progress bar with percentage on right
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: LinearProgressIndicator(
+                                value: progress,
+                                minHeight: 6,
+                                backgroundColor: Colors.grey[200],
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  getProgressColor(),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            '${(progress * 100).toStringAsFixed(0)}%',
+                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: _navyBlue,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-            ],
+                const SizedBox(height: 12),
+
+                // Handover Date
+                if (property.handoverDate != null)
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.calendar_today,
+                        size: 14,
+                        color: Colors.grey,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Handover: ${DateFormat('MMM yyyy').format(property.handoverDate!)}',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: Colors.grey[600],
+                            ),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
           ),
         ),
       ),
