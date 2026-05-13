@@ -18,23 +18,21 @@ class PropertiesShellPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Center(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.apartment_rounded, color: Colors.white, size: 22),
-              const SizedBox(width: 8),
-              const Text(
-                'Properties',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.apartment_rounded, color: Colors.white, size: 22),
+            const SizedBox(width: 8),
+            const Text(
+              'Properties',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-        centerTitle: false,
+        centerTitle: true,
         elevation: 0,
       ),
       body: propertiesAsync.when(
