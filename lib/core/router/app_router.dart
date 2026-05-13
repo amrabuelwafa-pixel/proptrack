@@ -26,6 +26,14 @@ GoRouter appRouter(AppRouterRef ref) {
   return GoRouter(
     redirect: (context, state) async {
       try {
+        final uri = state.uri;
+
+        // If there's a code in the URL, let Supabase process it — don't redirect yet
+        if (uri.queryParameters.containsKey('code')) {
+          debugPrint('OAuth code detected in URL, allowing Supabase to process: ${uri.queryParameters['code']}');
+          return null;
+        }
+
         final currentUser = Supabase.instance.client.auth.currentUser;
         final isLoggedIn = currentUser != null;
         final isOnPublicRoute = publicRoutes.contains(state.uri.path);
@@ -45,6 +53,11 @@ GoRouter appRouter(AppRouterRef ref) {
       }
     },
     routes: [
+      GoRoute(
+        path: '/',
+        name: 'root',
+        builder: (context, state) => const OAuthCallbackPage(),
+      ),
       GoRoute(
         path: '/auth/callback',
         name: 'callback',
