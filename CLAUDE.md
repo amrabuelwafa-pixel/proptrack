@@ -252,6 +252,22 @@ FX_API_KEY=your-open-exchange-rates-key
 
 Load in `main.dart` via `flutter_dotenv` before `Supabase.initialize()`.
 
+### Web Development Server
+
+**IMPORTANT:** This Flutter web app always runs on **port 3000**.
+
+**Run command:**
+```bash
+flutter run -d chrome --web-port=3000
+```
+
+**Whenever referencing localhost URLs**, always use **`http://localhost:3000`** — never other ports (3001, 8080, etc.). This applies to:
+- Supabase redirect URLs (Site URL and Redirect URLs in dashboard)
+- OAuth callback URLs (Google Cloud Console, GitHub, etc.)
+- Local development URLs in documentation
+- Password reset redirect URLs
+- Deep linking configuration
+
 ---
 
 ## Important Constraints (from SRS)
