@@ -15,6 +15,18 @@ A cross-platform Flutter application (iOS, Android, Web) that helps a single rea
 
 ---
 
+## Quick Reference: Critical Rules
+
+1. **Port:** Always `flutter run -d chrome --web-port=3000` — never other ports
+2. **Supabase:** Hardcoded in `main.dart` — do NOT use environment variables
+3. **Design:** Navy blue AppBars (`Color(0xFF1A2B4A)`), white text, `centerTitle: true`
+4. **Auth:** Uses `GoRouterRefreshStream` on `Supabase.instance.client.auth.onAuthStateChange` — no custom callbacks
+5. **Routes:** Never delete existing routes when modifying the router
+6. **Login Page:** Never change visual design without being asked
+7. **Code Changes:** Read file first, make changes, hot restart, confirm it works
+
+---
+
 ## Architecture: Clean Architecture
 
 ```
@@ -183,19 +195,48 @@ class ExtractionFailure extends Failure { ... }
 
 ## Navigation (go_router)
 
-Routes are defined in `core/router/app_router.dart`. All routes except `/login` are guarded. The router reads `authStateProvider` and redirects unauthenticated users to `/login`.
+Routes are defined in `core/router/app_router.dart`. The router uses `GoRouterRefreshStream` to listen to `Supabase.instance.client.auth.onAuthStateChange`. Auth state is checked via `Supabase.instance.client.auth.currentSession` (not a stream/provider).
 
+### Auth Logic
+- No session and not on auth page → redirect to `/login`
+- Has session and on `/login` → redirect to `/properties`
+- Any other state → allow navigation
+
+### Routes (do not delete)
 ```
 /login              → LoginPage
-/                   → DashboardPage
-/properties         → PropertiesListPage
-/properties/new     → AddPropertyPage
-/properties/:id     → PropertyDetailPage
-/properties/:id/edit         → EditPropertyPage
-/properties/:id/extract      → ExtractionReviewPage
-/reports            → ReportsPage
-/settings           → SettingsPage
+/register           → RegisterPage
+/forgot-password    → ForgotPasswordPage
+/properties         → AppShell (main app)
+  ├─ /properties/new         → AddPropertyPage
+  └─ /properties/:id         → PropertyDetailPage
+    └─ /properties/:id/edit  → EditPropertyPage
 ```
+
+---
+
+## Design System & Colors
+
+### Primary Colors
+- **Navy Blue (Primary):** `Color(0xFF1A2B4A)` — used for AppBar background, buttons, accents
+- **Secondary Navy:** `Color(0xFF2E4A7C)` — for hover states, secondary elements
+- **Light Background:** `Color(0xFFF5F6FA)` — page backgrounds
+- **White:** `Colors.white` — AppBar text and icons (always white on navy)
+
+### AppBar Rules
+- **Background:** Always `Color(0xFF1A2B4A)` (navy blue)
+- **Text color:** Always white (`Colors.white`)
+- **Icon color:** Always white
+- **centerTitle:** Always `true`
+- Example: `centerTitle: true` in all GoRoute builders that show AppBar
+
+### Design Philosophy
+- Premium and professional — no plain or basic UI
+- All cards have subtle shadows and rounded corners
+- Empty states have centered icons with descriptive text
+- Loading states use shimmer effects
+- Error states show icon + message + retry button
+- Mobile-first: all tap targets ≥ 44×44 px
 
 ---
 
@@ -240,33 +281,36 @@ Generated files (`*.g.dart`, `*.freezed.dart`) are gitignored and must not be ed
 
 ---
 
-## Environment Setup
+## Environment Setup & Development
 
-Copy `.env.example` to `.env` and fill in:
-```
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-key
-SENTRY_DSN=your-sentry-dsn
-FX_API_KEY=your-open-exchange-rates-key
+### Supabase Credentials (Hardcoded)
+
+**DO NOT use `String.fromEnvironment` or `flutter_dotenv`.** Credentials are hardcoded directly in `main.dart`:
+
+```dart
+await Supabase.initialize(
+  url: 'https://vpcpedlvmzyfjzrczqqn.supabase.co',
+  anonKey: 'sb_publishable_RmSLqvapeYH8uoL3xjZcSA_lJxrOj4Y',
+);
 ```
 
-Load in `main.dart` via `flutter_dotenv` before `Supabase.initialize()`.
+The anon key is safe to hardcode — it is a **public key by design** (same as API keys in frontend apps).
 
 ### Web Development Server
 
-**IMPORTANT:** This Flutter web app always runs on **port 3000**.
+**CRITICAL:** This Flutter web app **ALWAYS runs on port 3000**.
 
 **Run command:**
 ```bash
 flutter run -d chrome --web-port=3000
 ```
 
-**Whenever referencing localhost URLs**, always use **`http://localhost:3000`** — never other ports (3001, 8080, etc.). This applies to:
-- Supabase redirect URLs (Site URL and Redirect URLs in dashboard)
-- OAuth callback URLs (Google Cloud Console, GitHub, etc.)
-- Local development URLs in documentation
-- Password reset redirect URLs
-- Deep linking configuration
+**Port 3000 is mandatory for:**
+- Supabase OAuth redirects (set in Supabase dashboard + Google Cloud Console)
+- Google OAuth `redirectTo: 'http://localhost:3000'`
+- All localhost URLs in development and testing
+
+Never use 3001, 8080, or any other port.
 
 ---
 

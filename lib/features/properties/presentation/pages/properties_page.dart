@@ -21,11 +21,54 @@ class PropertiesPage extends ConsumerStatefulWidget {
 class _PropertiesPageState extends ConsumerState<PropertiesPage> {
   final _searchController = TextEditingController();
   String _searchQuery = '';
+  String _selectedFilter = 'All';
 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  String _getPropertyStatus(PropertyEntity property) {
+    if (property.totalInstallments == 0) return 'On Track';
+    if (property.paidInstallments >= property.totalInstallments) {
+      return 'On Track';
+    }
+
+    final handoverDate = property.handoverDate;
+    if (handoverDate != null) {
+      final daysUntilHandover = handoverDate.difference(DateTime.now()).inDays;
+      if (daysUntilHandover < 0) return 'Overdue';
+      if (daysUntilHandover <= 30) return 'Due Soon';
+    }
+    return 'On Track';
+  }
+
+  Widget _buildFilterChip(String label) {
+    final isSelected = _selectedFilter == label;
+    return GestureDetector(
+      onTap: () {
+        setState(() => _selectedFilter = label);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? _navyBlue : Colors.white,
+          border: isSelected
+              ? null
+              : Border.all(color: _navyBlue, width: 1.5),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: isSelected ? Colors.white : _navyBlue,
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -37,13 +80,21 @@ class _PropertiesPageState extends ConsumerState<PropertiesPage> {
       appBar: AppBar(
         backgroundColor: _navyBlue,
         elevation: 0,
-        title: const Text(
-          'Properties',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 24,
-          ),
+        centerTitle: true,
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.apartment_rounded, color: Colors.white, size: 22),
+            const SizedBox(width: 8),
+            const Text(
+              'Properties',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 18,
+              ),
+            ),
+          ],
         ),
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
@@ -81,22 +132,40 @@ class _PropertiesPageState extends ConsumerState<PropertiesPage> {
             return _buildEmptyState(context);
           }
 
-          final filteredProperties = properties
+          // Apply search filter
+          final searchFiltered = properties
               .where((p) =>
                   p.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
                   (p.developer?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false) ||
                   (p.location?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false))
               .toList();
 
+          // Apply status filter
+          final filteredProperties = _selectedFilter == 'All'
+              ? searchFiltered
+              : searchFiltered
+                  .where((p) => _getPropertyStatus(p) == _selectedFilter)
+                  .toList();
+
           return Column(
             children: [
+              // Search bar
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
                     hintText: 'Search properties...',
-                    prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                    prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear, size: 20),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() => _searchQuery = '');
+                            },
+                          )
+                        : null,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: const BorderSide(color: Colors.transparent),
@@ -114,6 +183,26 @@ class _PropertiesPageState extends ConsumerState<PropertiesPage> {
                   },
                 ),
               ),
+
+              // Filter chips
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    _buildFilterChip('All'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('On Track'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Due Soon'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Overdue'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Properties list or no results
               if (filteredProperties.isEmpty)
                 Expanded(
                   child: Center(
@@ -219,7 +308,7 @@ class _PropertiesPageState extends ConsumerState<PropertiesPage> {
 class _PropertyCard extends ConsumerWidget {
   final PropertyEntity property;
 
-  const _PropertyCard({required this.property,});
+  const _PropertyCard({required this.property});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -228,43 +317,48 @@ class _PropertyCard extends ConsumerWidget {
         : 0.0;
 
     String getStatusText() {
-      if (property.totalInstallments == 0) return 'Not Started';
+      if (property.totalInstallments == 0) return 'On Track';
       if (property.paidInstallments >= property.totalInstallments) {
-        return 'Completed';
+        return 'On Track';
       }
 
       final handoverDate = property.handoverDate;
       if (handoverDate != null) {
         final daysUntilHandover = handoverDate.difference(DateTime.now()).inDays;
         if (daysUntilHandover < 0) return 'Overdue';
-        if (daysUntilHandover < 30) return 'Due Soon';
+        if (daysUntilHandover <= 30) return 'Due Soon';
       }
       return 'On Track';
     }
 
     Color getStatusColor() {
       final status = getStatusText();
-      if (status == 'Completed') return const Color(0xFF059669);
-      if (status == 'Overdue') return const Color(0xFFD32F2F);
+      if (status == 'Overdue') return const Color(0xFFDC2626);
       if (status == 'Due Soon') return const Color(0xFFF97316);
-      if (status == 'Paying') return const Color(0xFF2E86AB);
-      return const Color(0xFF2E86AB);
+      return const Color(0xFF059669);
     }
 
+    Color getBorderColor() => getStatusColor();
     Color getProgressColor() => getStatusColor();
 
-    final formattedPrice = NumberFormat('#,##0.00').format(property.totalPrice);
+    final formattedPrice = NumberFormat('#,##0').format(property.totalPrice);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: Border(
+          left: BorderSide(
+            color: getBorderColor(),
+            width: 4,
+          ),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -278,110 +372,84 @@ class _PropertyCard extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Left border accent
+                // Top row: Property name + Status badge
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                      width: 4,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: _navyBlue,
-                        borderRadius: BorderRadius.circular(2),
+                    Expanded(
+                      child: Text(
+                        property.name,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: _navyBlue,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Property Name and Status Badge
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  property.name,
-                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                        color: _navyBlue,
-                                      ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: getStatusColor().withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  getStatusText(),
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: getStatusColor(),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          // Developer and Location
-                          if (property.developer != null || property.location != null)
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.location_on,
-                                  size: 14,
-                                  color: Colors.grey,
-                                ),
-                                const SizedBox(width: 4),
-                                Expanded(
-                                  child: Text(
-                                    [property.developer, property.location]
-                                        .whereType<String>()
-                                        .join(' • '),
-                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                          color: Colors.grey[600],
-                                          fontSize: 13,
-                                        ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                        ],
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: getStatusColor(),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        getStatusText(),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
 
-                // Price Row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '${property.currency} $formattedPrice',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: _navyBlue,
-                            fontSize: 16,
+                // Developer + Location row
+                if (property.developer != null || property.location != null)
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.location_on_outlined,
+                        size: 14,
+                        color: Colors.grey[600],
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          [property.developer, property.location]
+                              .whereType<String>()
+                              .join(' • '),
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey[600],
                           ),
-                    ),
-                  ],
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                const SizedBox(height: 12),
+
+                // Price row
+                Text(
+                  '${property.currency} $formattedPrice',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: _navyBlue,
+                  ),
                 ),
                 const SizedBox(height: 14),
 
-                // Progress Section with Grey Background
+                // Progress section
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -390,72 +458,62 @@ class _PropertyCard extends ConsumerWidget {
                   ),
                   child: Column(
                     children: [
-                      // Label and percentage
+                      // Left: installments, Right: percentage
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Installments',
-                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                  color: Colors.grey[700],
-                                  fontWeight: FontWeight.w600,
-                                ),
+                            '${property.paidInstallments}/${property.totalInstallments} installments paid',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey[600],
+                            ),
                           ),
                           Text(
-                            '${property.paidInstallments}/${property.totalInstallments} paid',
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                  color: Colors.grey[600],
-                                ),
+                            '${(progress * 100).toStringAsFixed(0)}%',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: _navyBlue,
+                            ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 8),
-                      // Progress bar with percentage on right
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(4),
-                              child: LinearProgressIndicator(
-                                value: progress,
-                                minHeight: 6,
-                                backgroundColor: Colors.grey[200],
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  getProgressColor(),
-                                ),
-                              ),
-                            ),
+
+                      // Progress bar
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          minHeight: 6,
+                          backgroundColor: Colors.grey[200],
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            getProgressColor(),
                           ),
-                          const SizedBox(width: 12),
-                          Text(
-                            '${(progress * 100).toStringAsFixed(0)}%',
-                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: _navyBlue,
-                                ),
-                          ),
-                        ],
+                        ),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 12),
 
-                // Handover Date
+                // Handover date
                 if (property.handoverDate != null)
                   Row(
                     children: [
-                      const Icon(
-                        Icons.calendar_today,
+                      Icon(
+                        Icons.calendar_today_outlined,
                         size: 14,
-                        color: Colors.grey,
+                        color: Colors.grey[600],
                       ),
                       const SizedBox(width: 6),
                       Text(
                         'Handover: ${DateFormat('MMM yyyy').format(property.handoverDate!)}',
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: Colors.grey[600],
-                            ),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
                       ),
                     ],
                   ),

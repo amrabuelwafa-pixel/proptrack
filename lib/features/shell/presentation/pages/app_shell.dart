@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:proptrack/core/theme/app_colors.dart';
 import 'package:proptrack/features/dashboard/presentation/pages/dashboard_page.dart';
-import 'package:proptrack/features/properties/presentation/pages/properties_shell_page.dart';
+import 'package:proptrack/features/properties/presentation/pages/properties_page.dart';
 import 'package:proptrack/features/profile/presentation/pages/profile_page.dart';
 import 'package:proptrack/features/settings/presentation/pages/settings_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -18,7 +18,7 @@ class _AppShellState extends State<AppShell> {
 
   final List<Widget> _pages = const [
     DashboardPage(),
-    PropertiesShellPage(),
+    PropertiesPage(),
     ProfilePage(),
     SettingsPage(),
   ];

@@ -54,7 +54,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<User> signInWithGoogle() async {
     await _supabaseClient.auth.signInWithOAuth(
       OAuthProvider.google,
-      redirectTo: 'io.supabase.proptrack://login-callback/',
+      redirectTo: 'http://localhost:3000',
     );
     return _supabaseClient.auth.currentUser!;
   }

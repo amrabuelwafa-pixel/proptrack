@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:proptrack/core/router/route_names.dart';
 import 'package:proptrack/core/theme/app_colors.dart';
 import 'package:proptrack/core/theme/theme_notifier.dart';
-import 'package:proptrack/features/auth/presentation/providers/auth_notifier.dart';
 import 'package:proptrack/shared/widgets/diagonal_pattern_background.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -19,6 +18,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _passwordVisible = false;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -27,27 +27,76 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     super.dispose();
   }
 
-  Future<void> _handleSignIn(WidgetRef ref) async {
+  Future<void> _handleSignIn() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final email = _emailController.text.trim();
-    final password = _passwordController.text;
+    setState(() => _isLoading = true);
 
-    final authNotifier = ref.read(authNotifierProvider.notifier);
-    await authNotifier.signInWithEmail(email, password);
+    try {
+      final email = _emailController.text.trim();
+      final password = _passwordController.text;
 
-    if (!mounted) return;
-
-    final authState = ref.read(authNotifierProvider);
-    if (authState == AuthState.authenticated) {
-      context.go('/');
-    } else if (authState == AuthState.error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authNotifier.errorMessage ?? 'Sign in failed'),
-          backgroundColor: Colors.red,
-        ),
+      await Supabase.instance.client.auth.signInWithPassword(
+        email: email,
+        password: password,
       );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Signed in successfully')),
+        );
+      }
+    } on AuthException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.message),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _handleGoogle() async {
+    setState(() => _isLoading = true);
+
+    try {
+      await Supabase.instance.client.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: 'http://localhost:3000',
+      );
+    } on AuthException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.message),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -67,22 +116,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final authState = ref.watch(authNotifierProvider);
-    final authNotifier = ref.read(authNotifierProvider.notifier);
     final themeMode = ref.watch(themeModeProvider);
-
-    ref.listen(authNotifierProvider, (_, next) {
-      if (next == AuthState.error) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(authNotifier.errorMessage ?? 'Authentication failed'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
-      }
-    });
-
-    final isLoading = authState == AuthState.loading;
 
     return Scaffold(
       body: DiagonalPatternBackground(
@@ -144,9 +178,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                   children: [
                                     // Google button
                                     _SocialButton(
-                                      onPressed: isLoading
+                                      onPressed: _isLoading
                                           ? null
-                                          : authNotifier.signInWithGoogle,
+                                          : _handleGoogle,
                                       backgroundColor: Colors.white,
                                       foregroundColor: const Color(0xFF1A1A2E),
                                       borderColor: const Color(0xFFE8E8E8),
@@ -156,7 +190,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                     const SizedBox(height: 12),
                                     // Apple button
                                     _SocialButton(
-                                      onPressed: isLoading ? null : () {},
+                                      onPressed: _isLoading ? null : () {},
                                       backgroundColor: Colors.black,
                                       foregroundColor: Colors.white,
                                       borderColor: Colors.black,
@@ -180,7 +214,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                       prefixIcon: Icons.email_outlined,
                                       isDark: isDark,
                                       keyboardType: TextInputType.emailAddress,
-                                      enabled: !isLoading,
+                                      enabled: !_isLoading,
                                       validator: _validateEmail,
                                     ),
                                     const SizedBox(height: 16),
@@ -193,11 +227,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                           isDark: isDark,
                                         ),
                                         GestureDetector(
-                                          onTap: isLoading
+                                          onTap: _isLoading
                                               ? null
-                                              : () => context.push(
-                                                  AppRoutes.forgotPassword,
-                                                ),
+                                              : () {},
                                           child: const Text(
                                             'Forgot password?',
                                             style: TextStyle(
@@ -216,7 +248,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                       prefixIcon: Icons.lock_outline,
                                       isDark: isDark,
                                       obscureText: !_passwordVisible,
-                                      enabled: !isLoading,
+                                      enabled: !_isLoading,
                                       validator: _validatePassword,
                                       suffixIcon: IconButton(
                                         icon: Icon(
@@ -239,7 +271,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                       width: double.infinity,
                                       height: 52,
                                       child: ElevatedButton(
-                                        onPressed: isLoading ? null : () => _handleSignIn(ref),
+                                        onPressed: _isLoading ? null : _handleSignIn,
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: isDark
                                               ? AppColors.accent
@@ -250,7 +282,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                           ),
                                           elevation: 0,
                                         ),
-                                        child: isLoading
+                                        child: _isLoading
                                             ? const SizedBox(
                                               height: 20,
                                               width: 20,
@@ -284,9 +316,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                             ),
                                           ),
                                           GestureDetector(
-                                            onTap: isLoading
+                                            onTap: _isLoading
                                                 ? null
-                                                : () => context.push(AppRoutes.register),
+                                                : () => context.push('/register'),
                                             child: const Text(
                                               'Sign Up',
                                               style: TextStyle(

@@ -102,6 +102,9 @@ class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
     DateTime? handoverDate,
     String? notes,
   }) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) throw Exception('User not authenticated');
+
     final response = await _client
         .from('properties')
         .update({
@@ -114,6 +117,7 @@ class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
           'notes': notes,
         })
         .eq('id', id)
+        .eq('user_id', userId)
         .select('*, installments(amount, is_paid)')
         .single();
 
@@ -122,6 +126,9 @@ class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
 
   @override
   Future<void> deleteProperty(String id) async {
-    await _client.from('properties').delete().eq('id', id);
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) throw Exception('User not authenticated');
+
+    await _client.from('properties').delete().eq('id', id).eq('user_id', userId);
   }
 }

@@ -28,6 +28,9 @@ class InstallmentRemoteDataSourceImpl implements InstallmentRemoteDataSource {
 
   @override
   Future<InstallmentModel> togglePaid(String id, bool isPaid) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) throw Exception('User not authenticated');
+
     final response = await _client
         .from('installments')
         .update({
@@ -35,6 +38,7 @@ class InstallmentRemoteDataSourceImpl implements InstallmentRemoteDataSource {
           'paid_at': isPaid ? DateTime.now().toIso8601String() : null,
         })
         .eq('id', id)
+        .eq('user_id', userId)
         .select()
         .single();
 
