@@ -40,10 +40,13 @@ Future<void> main() async {
       throw Exception('Missing Supabase credentials. Check .env file or environment variables.');
     }
 
-    // Initialize Supabase
+    // Initialize Supabase with PKCE flow for web OAuth
     await Supabase.initialize(
       url: supabaseUrl,
       anonKey: supabaseAnonKey,
+      authOptions: const FlutterAuthClientOptions(
+        authFlowType: AuthFlowType.pkce,
+      ),
     );
 
     runApp(
