@@ -144,7 +144,7 @@ class SidebarNavigation extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Colors.black.withAlpha(10),
             blurRadius: 8,
             offset: const Offset(4, 0),
           ),

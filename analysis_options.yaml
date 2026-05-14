@@ -11,6 +11,12 @@ analyzer:
     missing_return: error
     dead_code: warning
     todo: info
+    # Ignore style warnings that don't affect functionality
+    avoid_redundant_argument_values: ignore
+    prefer_const_constructors: ignore
+    prefer_const_literals_to_create_immutables: ignore
+    prefer_expression_function_bodies: ignore
+    sort_pub_dependencies: ignore
   exclude:
     - "**/*.g.dart"          # Generated files (build_runner)
     - "**/*.freezed.dart"
