@@ -238,7 +238,7 @@ class SidebarNavigation extends StatelessWidget {
                         height: 40,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: AppColors.primary.withValues(alpha: 0.1),
+                          color: AppColors.primary.withAlpha(25),
                         ),
                         child: Center(
                           child: Text(
