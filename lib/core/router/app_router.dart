@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:proptrack/features/auth/presentation/pages/login_page.dart';
 import 'package:proptrack/features/auth/presentation/pages/register_page.dart';
 import 'package:proptrack/features/properties/presentation/pages/properties_page.dart';
+import 'package:proptrack/features/properties/presentation/pages/property_detail_page.dart';
 import 'package:proptrack/features/shell/presentation/pages/app_shell.dart';
 
 part 'app_router.g.dart';
@@ -61,6 +62,15 @@ GoRouter appRouter(AppRouterRef ref) => GoRouter(
         GoRoute(
           path: '/properties',
           builder: (context, state) => const PropertiesPage(),
+          routes: [
+            GoRoute(
+              path: ':id',
+              builder: (context, state) {
+                final id = state.pathParameters['id']!;
+                return PropertyDetailPage(propertyId: id);
+              },
+            ),
+          ],
         ),
       ],
     );
