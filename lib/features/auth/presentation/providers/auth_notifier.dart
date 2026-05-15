@@ -7,7 +7,14 @@ import 'package:proptrack/features/auth/domain/usecases/sign_out_usecase.dart';
 import 'package:proptrack/features/auth/domain/usecases/sign_up_with_email_usecase.dart';
 import 'package:proptrack/features/auth/presentation/providers/auth_providers.dart';
 
-enum AuthState { idle, loading, authenticated, unauthenticated, error, signupPending }
+enum AuthState {
+  idle,
+  loading,
+  authenticated,
+  unauthenticated,
+  error,
+  signupPending
+}
 
 final authNotifierProvider = StateNotifierProvider<AuthNotifier, AuthState>(
   (ref) => AuthNotifier(

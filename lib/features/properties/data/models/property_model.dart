@@ -55,35 +55,35 @@ class PropertyModel extends PropertyEntity {
   }
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'user_id': userId,
-    'name': name,
-    'developer': developer,
-    'location': location,
-    'total_price': totalPrice,
-    'currency': currency,
-    'handover_date': handoverDate?.toIso8601String(),
-    'notes': notes,
-    'created_at': createdAt.toIso8601String(),
-    'updated_at': updatedAt.toIso8601String(),
-  };
+        'id': id,
+        'user_id': userId,
+        'name': name,
+        'developer': developer,
+        'location': location,
+        'total_price': totalPrice,
+        'currency': currency,
+        'handover_date': handoverDate?.toIso8601String(),
+        'notes': notes,
+        'created_at': createdAt.toIso8601String(),
+        'updated_at': updatedAt.toIso8601String(),
+      };
 
   PropertyEntity toEntity() => PropertyEntity(
-    id: id,
-    userId: userId,
-    name: name,
-    developer: developer,
-    location: location,
-    totalPrice: totalPrice,
-    currency: currency,
-    handoverDate: handoverDate,
-    notes: notes,
-    createdAt: createdAt,
-    updatedAt: updatedAt,
-    paidAmount: paidAmount,
-    totalInstallments: totalInstallments,
-    paidInstallments: paidInstallments,
-  );
+        id: id,
+        userId: userId,
+        name: name,
+        developer: developer,
+        location: location,
+        totalPrice: totalPrice,
+        currency: currency,
+        handoverDate: handoverDate,
+        notes: notes,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+        paidAmount: paidAmount,
+        totalInstallments: totalInstallments,
+        paidInstallments: paidInstallments,
+      );
 }
 
 class PropertyModelAdapter extends TypeAdapter<PropertyModel> {

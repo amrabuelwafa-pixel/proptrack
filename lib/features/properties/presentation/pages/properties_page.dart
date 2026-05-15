@@ -54,9 +54,7 @@ class _PropertiesPageState extends ConsumerState<PropertiesPage> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected ? _navyBlue : Colors.white,
-          border: isSelected
-              ? null
-              : Border.all(color: _navyBlue, width: 1.5),
+          border: isSelected ? null : Border.all(color: _navyBlue, width: 1.5),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
@@ -136,8 +134,14 @@ class _PropertiesPageState extends ConsumerState<PropertiesPage> {
           final searchFiltered = properties
               .where((p) =>
                   p.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                  (p.developer?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false) ||
-                  (p.location?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false))
+                  (p.developer
+                          ?.toLowerCase()
+                          .contains(_searchQuery.toLowerCase()) ??
+                      false) ||
+                  (p.location
+                          ?.toLowerCase()
+                          .contains(_searchQuery.toLowerCase()) ??
+                      false))
               .toList();
 
           // Apply status filter
@@ -209,7 +213,8 @@ class _PropertiesPageState extends ConsumerState<PropertiesPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.search_off, size: 64, color: Colors.grey[300]),
+                        Icon(Icons.search_off,
+                            size: 64, color: Colors.grey[300]),
                         const SizedBox(height: 16),
                         Text(
                           'No properties found',
@@ -222,7 +227,8 @@ class _PropertiesPageState extends ConsumerState<PropertiesPage> {
               else
                 Expanded(
                   child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
                     itemCount: filteredProperties.length,
                     itemBuilder: (context, index) {
                       final property = filteredProperties[index];
@@ -324,7 +330,8 @@ class _PropertyCard extends ConsumerWidget {
 
       final handoverDate = property.handoverDate;
       if (handoverDate != null) {
-        final daysUntilHandover = handoverDate.difference(DateTime.now()).inDays;
+        final daysUntilHandover =
+            handoverDate.difference(DateTime.now()).inDays;
         if (daysUntilHandover < 0) return 'Overdue';
         if (daysUntilHandover <= 30) return 'Due Soon';
       }
@@ -682,7 +689,8 @@ class _AddPropertySheetState extends ConsumerState<_AddPropertySheet> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  validator: (v) => v?.trim().isEmpty ?? true ? 'Required' : null,
+                  validator: (v) =>
+                      v?.trim().isEmpty ?? true ? 'Required' : null,
                 ),
                 const SizedBox(height: 16),
 
@@ -743,7 +751,8 @@ class _AddPropertySheetState extends ConsumerState<_AddPropertySheet> {
                   items: ['AED', 'USD', 'EUR', 'SAR', 'EGP']
                       .map((c) => DropdownMenuItem(value: c, child: Text(c)))
                       .toList(),
-                  onChanged: (v) => setState(() => _selectedCurrency = v ?? 'AED'),
+                  onChanged: (v) =>
+                      setState(() => _selectedCurrency = v ?? 'AED'),
                 ),
                 const SizedBox(height: 16),
 
@@ -761,7 +770,8 @@ class _AddPropertySheetState extends ConsumerState<_AddPropertySheet> {
                     child: Text(
                       _selectedHandoverDate == null
                           ? 'Select date'
-                          : DateFormat('MMM d, yyyy').format(_selectedHandoverDate!),
+                          : DateFormat('MMM d, yyyy')
+                              .format(_selectedHandoverDate!),
                     ),
                   ),
                 ),
@@ -827,7 +837,8 @@ class _AddPropertySheetState extends ConsumerState<_AddPropertySheet> {
                           )
                         : const Text(
                             'Save Property',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                   ),
                 ),

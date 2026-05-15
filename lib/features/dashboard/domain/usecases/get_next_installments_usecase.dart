@@ -16,20 +16,13 @@ class GetNextInstallmentsUseCase {
       }
 
       // Get installments with property names, ordered by due_date
-      final response = await _supabaseClient
-          .from('installments')
-          .select(
-            '''
+      final response = await _supabaseClient.from('installments').select('''
             id,
             due_date,
             amount,
             is_paid,
             properties(name)
-            '''
-          )
-          .eq('user_id', userId)
-          .eq('is_paid', false)
-          .order('due_date');
+            ''').eq('user_id', userId).eq('is_paid', false).order('due_date');
 
       final now = DateTime.now();
       final installments = <UpcomingInstallment>[];
@@ -41,7 +34,8 @@ class GetNextInstallmentsUseCase {
         installments.add(
           UpcomingInstallment(
             id: inst['id'] as String,
-            propertyName: (inst['properties'] as Map?)?['name'] as String? ?? 'Unknown',
+            propertyName:
+                (inst['properties'] as Map?)?['name'] as String? ?? 'Unknown',
             dueDate: dueDate,
             amount: (inst['amount'] as num).toDouble(),
             isOverdue: isOverdue,

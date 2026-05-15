@@ -170,7 +170,8 @@ class _PropertyFormBottomSheetState extends State<PropertyFormBottomSheet> {
                       onChanged: _isSubmitting
                           ? null
                           : (value) {
-                              setState(() => _selectedCurrency = value ?? 'EGP');
+                              setState(
+                                  () => _selectedCurrency = value ?? 'EGP');
                             },
                       decoration: const InputDecoration(
                         labelText: 'Currency',

@@ -59,20 +59,26 @@ class DashboardPage extends ConsumerWidget {
                           children: [
                             Text(
                               'Upcoming Payments',
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textPrimary,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleLarge
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.textPrimary,
+                                  ),
                             ),
                             GestureDetector(
                               onTap: () {},
                               child: Text(
                                 'See all',
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: AppColors.primary,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 12,
-                                ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 12,
+                                    ),
                               ),
                             ),
                           ],
@@ -93,7 +99,8 @@ class DashboardPage extends ConsumerWidget {
                           child: installmentsAsync.when(
                             loading: () => _buildInstallmentsShimmer(),
                             error: (e, st) => _buildInstallmentsError(),
-                            data: (installments) => _buildInstallmentsList(context, installments),
+                            data: (installments) =>
+                                _buildInstallmentsList(context, installments),
                           ),
                         ),
                       ],
@@ -142,7 +149,8 @@ class DashboardPage extends ConsumerWidget {
               child: MetricCard(
                 title: 'Upcoming',
                 value: metrics.upcomingPaymentsCount.toString(),
-                subtitle: '${NumberFormat('#,##0').format(metrics.upcomingPaymentsAmount)} EGP',
+                subtitle:
+                    '${NumberFormat('#,##0').format(metrics.upcomingPaymentsAmount)} EGP',
                 icon: Icons.calendar_today,
                 accentColor: const Color(0xFFB45309),
               ),
@@ -152,7 +160,8 @@ class DashboardPage extends ConsumerWidget {
               child: MetricCard(
                 title: 'Overdue',
                 value: metrics.overduePaymentsCount.toString(),
-                subtitle: '${NumberFormat('#,##0').format(metrics.overduePaymentsAmount)} EGP',
+                subtitle:
+                    '${NumberFormat('#,##0').format(metrics.overduePaymentsAmount)} EGP',
                 icon: Icons.warning,
                 accentColor: const Color(0xFFB91C1C),
               ),
@@ -239,16 +248,16 @@ class DashboardPage extends ConsumerWidget {
               Text(
                 "You're all caught up!",
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
               ),
               const SizedBox(height: 8),
               Text(
                 'No payments due in the next 30 days',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+                      color: AppColors.textSecondary,
+                    ),
               ),
             ],
           ),
@@ -268,7 +277,8 @@ class DashboardPage extends ConsumerWidget {
       itemBuilder: (context, index) {
         final inst = installments[index];
         final daysUntilDue = inst.dueDate.difference(DateTime.now()).inDays;
-        final indicatorColor = inst.isOverdue ? const Color(0xFFB91C1C) : const Color(0xFFB45309);
+        final indicatorColor =
+            inst.isOverdue ? const Color(0xFFB91C1C) : const Color(0xFFB45309);
 
         return Container(
           color: Colors.white,

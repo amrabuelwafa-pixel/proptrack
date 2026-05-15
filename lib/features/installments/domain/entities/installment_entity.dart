@@ -29,16 +29,16 @@ class InstallmentEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-    id,
-    propertyId,
-    userId,
-    dueDate,
-    amount,
-    isPaid,
-    paidAt,
-    label,
-    notes,
-    createdAt,
-    updatedAt,
-  ];
+        id,
+        propertyId,
+        userId,
+        dueDate,
+        amount,
+        isPaid,
+        paidAt,
+        label,
+        notes,
+        createdAt,
+        updatedAt,
+      ];
 }

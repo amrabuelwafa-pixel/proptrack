@@ -42,7 +42,9 @@ class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
         .eq('user_id', userId)
         .order('created_at', ascending: false);
 
-    return (response as List<dynamic>).map((json) => PropertyModel.fromJson(json as Map<String, dynamic>)).toList();
+    return (response as List<dynamic>)
+        .map((json) => PropertyModel.fromJson(json as Map<String, dynamic>))
+        .toList();
   }
 
   @override
@@ -129,6 +131,10 @@ class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) throw Exception('User not authenticated');
 
-    await _client.from('properties').delete().eq('id', id).eq('user_id', userId);
+    await _client
+        .from('properties')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', userId);
   }
 }

@@ -40,10 +40,14 @@ class PropertyForm extends StatefulWidget {
 class _PropertyFormState extends State<PropertyForm> {
   late final _formKey = GlobalKey<FormState>();
   late final _nameController = TextEditingController(text: widget.initialName);
-  late final _developerController = TextEditingController(text: widget.initialDeveloper);
-  late final _locationController = TextEditingController(text: widget.initialLocation);
-  late final _priceController = TextEditingController(text: widget.initialPrice?.toString() ?? '');
-  late final _notesController = TextEditingController(text: widget.initialNotes);
+  late final _developerController =
+      TextEditingController(text: widget.initialDeveloper);
+  late final _locationController =
+      TextEditingController(text: widget.initialLocation);
+  late final _priceController =
+      TextEditingController(text: widget.initialPrice?.toString() ?? '');
+  late final _notesController =
+      TextEditingController(text: widget.initialNotes);
   late String _selectedCurrency = widget.initialCurrency ?? 'EGP';
   late DateTime? _selectedHandoverDate = widget.initialHandoverDate;
   late bool _isSubmitting = false;
@@ -71,7 +75,8 @@ class _PropertyFormState extends State<PropertyForm> {
               controller: _nameController,
               enabled: !_isSubmitting,
               decoration: const InputDecoration(labelText: 'Property Name *'),
-              validator: (value) => (value?.isEmpty ?? true) ? 'Required' : null,
+              validator: (value) =>
+                  (value?.isEmpty ?? true) ? 'Required' : null,
             ),
             const SizedBox(height: 16),
             TextFormField(
@@ -93,8 +98,10 @@ class _PropertyFormState extends State<PropertyForm> {
                   child: TextFormField(
                     controller: _priceController,
                     enabled: !_isSubmitting,
-                    decoration: const InputDecoration(labelText: 'Total Price *'),
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration:
+                        const InputDecoration(labelText: 'Total Price *'),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
                     validator: (value) {
                       if (value?.isEmpty ?? true) return 'Required';
                       final num = double.tryParse(value!);
@@ -113,7 +120,10 @@ class _PropertyFormState extends State<PropertyForm> {
                       DropdownMenuItem(value: 'AED', child: Text('AED')),
                       DropdownMenuItem(value: 'EUR', child: Text('EUR')),
                     ],
-                    onChanged: _isSubmitting ? null : (value) => setState(() => _selectedCurrency = value ?? 'EGP'),
+                    onChanged: _isSubmitting
+                        ? null
+                        : (value) =>
+                            setState(() => _selectedCurrency = value ?? 'EGP'),
                     decoration: const InputDecoration(labelText: 'Currency'),
                   ),
                 ),

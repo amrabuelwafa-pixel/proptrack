@@ -22,8 +22,9 @@ class InstallmentTile extends StatelessWidget {
       title: Text(
         installment.label ?? 'Installment',
         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-          decoration: installment.isPaid ? TextDecoration.lineThrough : null,
-        ),
+              decoration:
+                  installment.isPaid ? TextDecoration.lineThrough : null,
+            ),
       ),
       subtitle: Text(
         DateFormat('d MMM yyyy').format(installment.dueDate),
@@ -32,8 +33,8 @@ class InstallmentTile extends StatelessWidget {
       secondary: Text(
         '$currency ${installment.amount.toStringAsFixed(2)}',
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          fontWeight: FontWeight.w600,
-        ),
+              fontWeight: FontWeight.w600,
+            ),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 8),
     );

@@ -21,96 +21,96 @@ class MetricCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(14),
-      border: Border(
-        left: BorderSide(color: accentColor, width: 4),
-      ),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.06),
-          blurRadius: 8,
-          offset: const Offset(0, 2),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border(
+            left: BorderSide(color: accentColor, width: 4),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
-      ],
-    ),
-    child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (currencySymbol.isNotEmpty) ...[
-                      Text(
-                        currencySymbol,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        if (currencySymbol.isNotEmpty) ...[
+                          Text(
+                            currencySymbol,
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(width: 3),
+                        ],
+                        Expanded(
+                          child: Text(
+                            value,
+                            style: const TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.textPrimary,
+                              letterSpacing: -0.5,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 3),
-                    ],
-                    Expanded(
-                      child: Text(
-                        value,
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.textPrimary,
-                          letterSpacing: -0.5,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle!,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w500,
-                  ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: accentColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                if (subtitle != null) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle!,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ],
-            ),
+                child: Icon(
+                  icon,
+                  color: accentColor,
+                  size: 24,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 12),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: accentColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              icon,
-              color: accentColor,
-              size: 24,
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
+        ),
+      );
 }

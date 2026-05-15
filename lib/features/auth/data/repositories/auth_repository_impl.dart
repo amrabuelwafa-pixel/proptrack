@@ -10,8 +10,7 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl(this._remoteDataSource);
 
   @override
-  Stream<AuthState> get authStateChanges =>
-      _remoteDataSource.authStateChanges;
+  Stream<AuthState> get authStateChanges => _remoteDataSource.authStateChanges;
 
   @override
   User? get currentUser => _remoteDataSource.currentUser;

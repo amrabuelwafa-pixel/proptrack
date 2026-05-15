@@ -20,7 +20,8 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepositoryImpl(dataSource);
 });
 
-final signInWithGoogleUseCaseProvider = Provider<SignInWithGoogleUseCase>((ref) {
+final signInWithGoogleUseCaseProvider =
+    Provider<SignInWithGoogleUseCase>((ref) {
   final repository = ref.watch(authRepositoryProvider);
   return SignInWithGoogleUseCase(repository);
 });

@@ -11,7 +11,8 @@ final dashboardMetricsProvider = FutureProvider<DashboardMetrics>((ref) async {
   final supabaseClient = ref.watch(supabaseClientProvider);
   final propertyRepository = ref.watch(propertyRepositoryProvider);
 
-  final useCase = GetDashboardMetricsUseCase(propertyRepository, supabaseClient);
+  final useCase =
+      GetDashboardMetricsUseCase(propertyRepository, supabaseClient);
   final result = await useCase();
 
   return result.fold(

@@ -32,7 +32,8 @@ class EditPropertyPage extends ConsumerWidget {
         initialHandoverDate: property.handoverDate,
         initialNotes: property.notes,
         submitLabel: 'Update Property',
-        onSubmit: (name, developer, location, price, currency, handoverDate, notes) async {
+        onSubmit: (name, developer, location, price, currency, handoverDate,
+            notes) async {
           final notifier = ref.read(propertyNotifierProvider.notifier);
           final params = UpdatePropertyParams(
             id: propertyId,

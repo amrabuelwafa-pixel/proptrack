@@ -7,7 +7,8 @@ import 'package:proptrack/features/installments/domain/repositories/installment_
 import 'package:proptrack/features/installments/domain/usecases/get_installments_by_property_usecase.dart';
 import 'package:proptrack/features/installments/domain/usecases/toggle_installment_paid_usecase.dart';
 
-final installmentRemoteDataSourceProvider = Provider<InstallmentRemoteDataSource>((ref) {
+final installmentRemoteDataSourceProvider =
+    Provider<InstallmentRemoteDataSource>((ref) {
   final client = ref.watch(supabaseClientProvider);
   return InstallmentRemoteDataSourceImpl(client);
 });
@@ -17,18 +18,22 @@ final installmentRepositoryProvider = Provider<InstallmentRepository>((ref) {
   return InstallmentRepositoryImpl(dataSource);
 });
 
-final getInstallmentsByPropertyUseCaseProvider = Provider<GetInstallmentsByPropertyUseCase>((ref) {
+final getInstallmentsByPropertyUseCaseProvider =
+    Provider<GetInstallmentsByPropertyUseCase>((ref) {
   final repository = ref.watch(installmentRepositoryProvider);
   return GetInstallmentsByPropertyUseCase(repository);
 });
 
-final toggleInstallmentPaidUseCaseProvider = Provider<ToggleInstallmentPaidUseCase>((ref) {
+final toggleInstallmentPaidUseCaseProvider =
+    Provider<ToggleInstallmentPaidUseCase>((ref) {
   final repository = ref.watch(installmentRepositoryProvider);
   return ToggleInstallmentPaidUseCase(repository);
 });
 
-class _InstallmentNotifier extends StateNotifier<AsyncValue<List<InstallmentEntity>>> {
-  _InstallmentNotifier(this._ref, this._propertyId) : super(const AsyncLoading()) {
+class _InstallmentNotifier
+    extends StateNotifier<AsyncValue<List<InstallmentEntity>>> {
+  _InstallmentNotifier(this._ref, this._propertyId)
+      : super(const AsyncLoading()) {
     _load();
   }
 
@@ -41,7 +46,8 @@ class _InstallmentNotifier extends StateNotifier<AsyncValue<List<InstallmentEnti
       final useCase = _ref.read(getInstallmentsByPropertyUseCaseProvider);
       final result = await useCase(_propertyId);
       state = result.fold(
-        (failure) => AsyncError<List<InstallmentEntity>>(failure, StackTrace.current),
+        (failure) =>
+            AsyncError<List<InstallmentEntity>>(failure, StackTrace.current),
         (installments) => AsyncData(installments),
       );
     } on Exception catch (e, st) {
@@ -55,7 +61,8 @@ class _InstallmentNotifier extends StateNotifier<AsyncValue<List<InstallmentEnti
       final result = await useCase(id, isPaid);
       return result.fold(
         (failure) {
-          state = AsyncError<List<InstallmentEntity>>(failure, StackTrace.current);
+          state =
+              AsyncError<List<InstallmentEntity>>(failure, StackTrace.current);
           return false;
         },
         (_) {
@@ -69,7 +76,7 @@ class _InstallmentNotifier extends StateNotifier<AsyncValue<List<InstallmentEnti
   }
 }
 
-final installmentNotifierProvider =
-    StateNotifierProvider.family<_InstallmentNotifier, AsyncValue<List<InstallmentEntity>>, String>(
+final installmentNotifierProvider = StateNotifierProvider.family<
+    _InstallmentNotifier, AsyncValue<List<InstallmentEntity>>, String>(
   (ref, propertyId) => _InstallmentNotifier(ref, propertyId),
 );

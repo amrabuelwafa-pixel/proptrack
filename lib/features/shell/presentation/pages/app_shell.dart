@@ -71,11 +71,13 @@ class _AppShellState extends State<AppShell> {
               unselectedItemColor: Colors.grey,
               elevation: 8,
               items: _navItems
-                  .map((item) => BottomNavigationBarItem(
-                        icon: Icon(item.icon),
-                        activeIcon: Icon(item.activeIcon),
-                        label: item.label,
-                      ),)
+                  .map(
+                    (item) => BottomNavigationBarItem(
+                      icon: Icon(item.icon),
+                      activeIcon: Icon(item.activeIcon),
+                      label: item.label,
+                    ),
+                  )
                   .toList(),
             ),
           );
@@ -363,7 +365,9 @@ class _NavItemWidgetState extends State<_NavItemWidget> {
               child: Row(
                 children: [
                   Icon(
-                    widget.isSelected ? widget.item.activeIcon : widget.item.icon,
+                    widget.isSelected
+                        ? widget.item.activeIcon
+                        : widget.item.icon,
                     color: widget.isSelected
                         ? Colors.white
                         : const Color(0xFF94A3B8),

@@ -99,34 +99,42 @@ class PropertiesShellPage extends ConsumerWidget {
       ),
       builder: (context) => PropertyFormBottomSheet(
         property: property as PropertyEntity?,
-        onSubmit: (String name, String? developer, String? location, double price, String currency, DateTime? handoverDate, String? notes) async {
+        onSubmit: (String name,
+            String? developer,
+            String? location,
+            double price,
+            String currency,
+            DateTime? handoverDate,
+            String? notes) async {
           final notifierObj = notifier as dynamic;
           final propertyObj = property as PropertyEntity?;
 
           final success = propertyObj != null
               ? await notifierObj.update(
-                  UpdatePropertyParams(
-                    id: propertyObj.id,
-                    name: name,
-                    developer: developer,
-                    location: location,
-                    totalPrice: price,
-                    currency: currency,
-                    handoverDate: handoverDate,
-                    notes: notes,
-                  ),
-                ) as bool? ?? false
+                    UpdatePropertyParams(
+                      id: propertyObj.id,
+                      name: name,
+                      developer: developer,
+                      location: location,
+                      totalPrice: price,
+                      currency: currency,
+                      handoverDate: handoverDate,
+                      notes: notes,
+                    ),
+                  ) as bool? ??
+                  false
               : await notifierObj.create(
-                  CreatePropertyParams(
-                    name: name,
-                    developer: developer,
-                    location: location,
-                    totalPrice: price,
-                    currency: currency,
-                    handoverDate: handoverDate,
-                    notes: notes,
-                  ),
-                ) as bool? ?? false;
+                    CreatePropertyParams(
+                      name: name,
+                      developer: developer,
+                      location: location,
+                      totalPrice: price,
+                      currency: currency,
+                      handoverDate: handoverDate,
+                      notes: notes,
+                    ),
+                  ) as bool? ??
+                  false;
 
           if (!context.mounted) return;
 
@@ -135,9 +143,7 @@ class PropertiesShellPage extends ConsumerWidget {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  propertyObj != null
-                      ? 'Property updated'
-                      : 'Property created',
+                  propertyObj != null ? 'Property updated' : 'Property created',
                 ),
               ),
             );
@@ -211,15 +217,15 @@ class PropertiesShellPage extends ConsumerWidget {
           Text(
             'No properties yet',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+                  fontWeight: FontWeight.bold,
+                ),
           ),
           const SizedBox(height: 8),
           Text(
             'Add your first property to get started',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.grey[600],
-            ),
+                  color: Colors.grey[600],
+                ),
           ),
           const SizedBox(height: 32),
           ElevatedButton.icon(

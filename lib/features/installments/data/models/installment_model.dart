@@ -23,7 +23,9 @@ class InstallmentModel extends InstallmentEntity {
       dueDate: DateTime.parse(json['due_date'] as String),
       amount: (json['amount'] as num).toDouble(),
       isPaid: json['is_paid'] as bool,
-      paidAt: json['paid_at'] != null ? DateTime.parse(json['paid_at'] as String) : null,
+      paidAt: json['paid_at'] != null
+          ? DateTime.parse(json['paid_at'] as String)
+          : null,
       label: json['label'] as String?,
       notes: json['notes'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
@@ -32,30 +34,30 @@ class InstallmentModel extends InstallmentEntity {
   }
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'property_id': propertyId,
-    'user_id': userId,
-    'due_date': dueDate.toIso8601String(),
-    'amount': amount,
-    'is_paid': isPaid,
-    'paid_at': paidAt?.toIso8601String(),
-    'label': label,
-    'notes': notes,
-    'created_at': createdAt.toIso8601String(),
-    'updated_at': updatedAt.toIso8601String(),
-  };
+        'id': id,
+        'property_id': propertyId,
+        'user_id': userId,
+        'due_date': dueDate.toIso8601String(),
+        'amount': amount,
+        'is_paid': isPaid,
+        'paid_at': paidAt?.toIso8601String(),
+        'label': label,
+        'notes': notes,
+        'created_at': createdAt.toIso8601String(),
+        'updated_at': updatedAt.toIso8601String(),
+      };
 
   InstallmentEntity toEntity() => InstallmentEntity(
-    id: id,
-    propertyId: propertyId,
-    userId: userId,
-    dueDate: dueDate,
-    amount: amount,
-    isPaid: isPaid,
-    paidAt: paidAt,
-    label: label,
-    notes: notes,
-    createdAt: createdAt,
-    updatedAt: updatedAt,
-  );
+        id: id,
+        propertyId: propertyId,
+        userId: userId,
+        dueDate: dueDate,
+        amount: amount,
+        isPaid: isPaid,
+        paidAt: paidAt,
+        label: label,
+        notes: notes,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
 }

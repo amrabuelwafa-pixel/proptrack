@@ -48,7 +48,8 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
     } else if (authState == AuthState.error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(authNotifier.errorMessage ?? 'Failed to send reset email'),
+          content:
+              Text(authNotifier.errorMessage ?? 'Failed to send reset email'),
           backgroundColor: Colors.red,
         ),
       );

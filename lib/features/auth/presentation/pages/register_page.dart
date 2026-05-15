@@ -246,179 +246,63 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Column(
-                  children: [
-                    const SizedBox(height: 32),
-                    // Logo badge (same as login)
-                    _LogoBadge(isDark: isDark),
-                    const SizedBox(height: 16),
-                    Text(
-                      'PropTrack',
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.2,
-                        color: isDark ? Colors.white : AppColors.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Your property payments, organized.',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textSecondary,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
-                    // Form card
-                    Container(
-                      decoration: BoxDecoration(
-                        color: isDark ? AppDarkColors.surface : Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 20,
-                            offset: Offset(0, 8),
+                        children: [
+                          const SizedBox(height: 32),
+                          // Logo badge (same as login)
+                          _LogoBadge(isDark: isDark),
+                          const SizedBox(height: 16),
+                          Text(
+                            'PropTrack',
+                            style: TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.2,
+                              color: isDark ? Colors.white : AppColors.primary,
+                            ),
                           ),
-                        ],
-                      ),
-                      padding: const EdgeInsets.all(24),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Create Account',
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: isDark ? Colors.white : AppColors.primary,
-                              ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Your property payments, organized.',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: AppColors.textSecondary,
                             ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Join PropTrack today',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: isDark
-                                    ? AppDarkColors.textSecondary
-                                    : AppColors.textSecondary,
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            _FieldLabel(
-                              text: 'Full name',
-                              isDark: isDark,
-                            ),
-                            const SizedBox(height: 8),
-                            _AuthField(
-                              controller: _fullNameController,
-                              hint: 'John Doe',
-                              prefixIcon: Icons.person_outline,
-                              isDark: isDark,
-                              validator: _validateFullName,
-                            ),
-                            const SizedBox(height: 16),
-                            _FieldLabel(
-                              text: 'Email address',
-                              isDark: isDark,
-                            ),
-                            const SizedBox(height: 8),
-                            _AuthField(
-                              controller: _emailController,
-                              hint: 'you@example.com',
-                              prefixIcon: Icons.email_outlined,
-                              isDark: isDark,
-                              keyboardType: TextInputType.emailAddress,
-                              validator: _validateEmail,
-                            ),
-                            const SizedBox(height: 16),
-                            _FieldLabel(text: 'Password', isDark: isDark),
-                            const SizedBox(height: 8),
-                            _AuthField(
-                              controller: _passwordController,
-                              hint: 'Create a strong password',
-                              prefixIcon: Icons.lock_outline,
-                              isDark: isDark,
-                              obscureText: !_passwordVisible,
-                              validator: _validatePassword,
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _passwordVisible
-                                      ? Icons.visibility
-                                      : Icons.visibility_off,
-                                  color: AppColors.textSecondary,
-                                  size: 20,
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 24),
+                          // Form card
+                          Container(
+                            decoration: BoxDecoration(
+                              color:
+                                  isDark ? AppDarkColors.surface : Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 20,
+                                  offset: Offset(0, 8),
                                 ),
-                                onPressed: () {
-                                  setState(() {
-                                    _passwordVisible = !_passwordVisible;
-                                  });
-                                },
-                              ),
+                              ],
                             ),
-                            const SizedBox(height: 16),
-                            _FieldLabel(
-                              text: 'Confirm password',
-                              isDark: isDark,
-                            ),
-                            const SizedBox(height: 8),
-                            _AuthField(
-                              controller: _confirmController,
-                              hint: 'Re-enter your password',
-                              prefixIcon: Icons.lock_outline,
-                              isDark: isDark,
-                              obscureText: !_confirmVisible,
-                              validator: _validateConfirm,
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _confirmVisible
-                                      ? Icons.visibility
-                                      : Icons.visibility_off,
-                                  color: AppColors.textSecondary,
-                                  size: 20,
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    _confirmVisible = !_confirmVisible;
-                                  });
-                                },
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            SizedBox(
-                              width: double.infinity,
-                              height: 52,
-                              child: ElevatedButton(
-                                onPressed: () => _handleCreateAccount(ref),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: isDark
-                                      ? AppColors.accent
-                                      : AppColors.primary,
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  elevation: 0,
-                                ),
-                                child: const Text(
-                                  'Create Account',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            Center(
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
+                            padding: const EdgeInsets.all(24),
+                            child: Form(
+                              key: _formKey,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Already have an account? ',
+                                    'Create Account',
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: isDark
+                                          ? Colors.white
+                                          : AppColors.primary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'Join PropTrack today',
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: isDark
@@ -426,41 +310,162 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                           : AppColors.textSecondary,
                                     ),
                                   ),
-                                  GestureDetector(
-                                    onTap: () => context.pop(),
-                                    child: const Text(
-                                      'Sign In',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColors.accent,
+                                  const SizedBox(height: 24),
+                                  _FieldLabel(
+                                    text: 'Full name',
+                                    isDark: isDark,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  _AuthField(
+                                    controller: _fullNameController,
+                                    hint: 'John Doe',
+                                    prefixIcon: Icons.person_outline,
+                                    isDark: isDark,
+                                    validator: _validateFullName,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _FieldLabel(
+                                    text: 'Email address',
+                                    isDark: isDark,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  _AuthField(
+                                    controller: _emailController,
+                                    hint: 'you@example.com',
+                                    prefixIcon: Icons.email_outlined,
+                                    isDark: isDark,
+                                    keyboardType: TextInputType.emailAddress,
+                                    validator: _validateEmail,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _FieldLabel(text: 'Password', isDark: isDark),
+                                  const SizedBox(height: 8),
+                                  _AuthField(
+                                    controller: _passwordController,
+                                    hint: 'Create a strong password',
+                                    prefixIcon: Icons.lock_outline,
+                                    isDark: isDark,
+                                    obscureText: !_passwordVisible,
+                                    validator: _validatePassword,
+                                    suffixIcon: IconButton(
+                                      icon: Icon(
+                                        _passwordVisible
+                                            ? Icons.visibility
+                                            : Icons.visibility_off,
+                                        color: AppColors.textSecondary,
+                                        size: 20,
                                       ),
+                                      onPressed: () {
+                                        setState(() {
+                                          _passwordVisible = !_passwordVisible;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _FieldLabel(
+                                    text: 'Confirm password',
+                                    isDark: isDark,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  _AuthField(
+                                    controller: _confirmController,
+                                    hint: 'Re-enter your password',
+                                    prefixIcon: Icons.lock_outline,
+                                    isDark: isDark,
+                                    obscureText: !_confirmVisible,
+                                    validator: _validateConfirm,
+                                    suffixIcon: IconButton(
+                                      icon: Icon(
+                                        _confirmVisible
+                                            ? Icons.visibility
+                                            : Icons.visibility_off,
+                                        color: AppColors.textSecondary,
+                                        size: 20,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          _confirmVisible = !_confirmVisible;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    height: 52,
+                                    child: ElevatedButton(
+                                      onPressed: () =>
+                                          _handleCreateAccount(ref),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: isDark
+                                            ? AppColors.accent
+                                            : AppColors.primary,
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                        elevation: 0,
+                                      ),
+                                      child: const Text(
+                                        'Create Account',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  Center(
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          'Already have an account? ',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: isDark
+                                                ? AppDarkColors.textSecondary
+                                                : AppColors.textSecondary,
+                                          ),
+                                        ),
+                                        GestureDetector(
+                                          onTap: () => context.pop(),
+                                          child: const Text(
+                                            'Sign In',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                              color: AppColors.accent,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    Text(
-                      'PropTrack © 2026',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isDark
-                            ? AppDarkColors.textSecondary
-                            : AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                  ],
-                ), // Column
-              ), // Padding
-            ), // ConstrainedBox
-          ), // Align
-        ), // SingleChildScrollView
+                          ),
+                          const SizedBox(height: 32),
+                          Text(
+                            'PropTrack © 2026',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: isDark
+                                  ? AppDarkColors.textSecondary
+                                  : AppColors.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                        ],
+                      ), // Column
+                    ), // Padding
+                  ), // ConstrainedBox
+                ), // Align
+              ), // SingleChildScrollView
             ], // Stack children
           ), // Stack
         ), // SafeArea
@@ -505,9 +510,8 @@ class _LogoBadge extends StatelessWidget {
                 color: AppColors.accent,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isDark
-                      ? AppDarkColors.background
-                      : AppColors.background,
+                  color:
+                      isDark ? AppDarkColors.background : AppColors.background,
                   width: 2,
                 ),
               ),

@@ -26,41 +26,41 @@ class GoRouterRefreshStream extends ChangeNotifier {
 
 @riverpod
 GoRouter appRouter(AppRouterRef ref) => GoRouter(
-  initialLocation: '/login',
-  refreshListenable: GoRouterRefreshStream(
-    Supabase.instance.client.auth.onAuthStateChange,
-  ),
-  redirect: (context, state) {
-    final session = Supabase.instance.client.auth.currentSession;
-    final isLogin = state.matchedLocation == '/login';
-    final isRegister = state.matchedLocation == '/register';
+      initialLocation: '/login',
+      refreshListenable: GoRouterRefreshStream(
+        Supabase.instance.client.auth.onAuthStateChange,
+      ),
+      redirect: (context, state) {
+        final session = Supabase.instance.client.auth.currentSession;
+        final isLogin = state.matchedLocation == '/login';
+        final isRegister = state.matchedLocation == '/register';
 
-    if (session == null && !isLogin && !isRegister) {
-      return '/login';
-    }
+        if (session == null && !isLogin && !isRegister) {
+          return '/login';
+        }
 
-    if (session != null && isLogin) {
-      return '/';
-    }
+        if (session != null && isLogin) {
+          return '/';
+        }
 
-    return null;
-  },
-  routes: [
-    GoRoute(
-      path: '/login',
-      builder: (context, state) => const LoginPage(),
-    ),
-    GoRoute(
-      path: '/register',
-      builder: (context, state) => const RegisterPage(),
-    ),
-    GoRoute(
-      path: '/',
-      builder: (context, state) => const AppShell(),
-    ),
-    GoRoute(
-      path: '/properties',
-      builder: (context, state) => const PropertiesPage(),
-    ),
-  ],
-);
+        return null;
+      },
+      routes: [
+        GoRoute(
+          path: '/login',
+          builder: (context, state) => const LoginPage(),
+        ),
+        GoRoute(
+          path: '/register',
+          builder: (context, state) => const RegisterPage(),
+        ),
+        GoRoute(
+          path: '/',
+          builder: (context, state) => const AppShell(),
+        ),
+        GoRoute(
+          path: '/properties',
+          builder: (context, state) => const PropertiesPage(),
+        ),
+      ],
+    );

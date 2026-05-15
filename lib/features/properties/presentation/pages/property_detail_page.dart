@@ -38,7 +38,8 @@ class PropertyDetailPage extends ConsumerWidget {
           ),
           IconButton(
             icon: const Icon(Icons.delete),
-            onPressed: () => _showDeleteConfirmation(context, property.name, () {
+            onPressed: () =>
+                _showDeleteConfirmation(context, property.name, () {
               _deleteProperty(context, propertyId, notifier);
             }),
           ),
@@ -76,8 +77,8 @@ class PropertyDetailPage extends ConsumerWidget {
             Text(
               'Payment Progress',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 12),
             LinearProgressIndicator(
@@ -93,22 +94,24 @@ class PropertyDetailPage extends ConsumerWidget {
             Text(
               'Installments',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 12),
             Consumer(
               builder: (context, ref, _) {
-                final installments = ref.watch(installmentNotifierProvider(propertyId));
-                final installmentNotifier = ref.read(installmentNotifierProvider(propertyId).notifier);
+                final installments =
+                    ref.watch(installmentNotifierProvider(propertyId));
+                final installmentNotifier =
+                    ref.read(installmentNotifierProvider(propertyId).notifier);
 
                 return installments.when(
                   loading: () => const CircularProgressIndicator(),
                   error: (error, stack) => Text(
                     'Error loading installments',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.red,
-                    ),
+                          color: Colors.red,
+                        ),
                   ),
                   data: (installmentsList) {
                     if (installmentsList.isEmpty) {
@@ -117,9 +120,10 @@ class PropertyDetailPage extends ConsumerWidget {
                           padding: const EdgeInsets.all(16),
                           child: Text(
                             'No installments yet',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.grey[600],
-                            ),
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: Colors.grey[600],
+                                    ),
                           ),
                         ),
                       );
@@ -130,8 +134,8 @@ class PropertyDetailPage extends ConsumerWidget {
                             (inst) => InstallmentTile(
                               installment: inst,
                               currency: property.currency,
-                              onToggle: (isPaid) =>
-                                  installmentNotifier.togglePaid(inst.id, isPaid),
+                              onToggle: (isPaid) => installmentNotifier
+                                  .togglePaid(inst.id, isPaid),
                             ),
                           )
                           .toList(),
@@ -147,20 +151,20 @@ class PropertyDetailPage extends ConsumerWidget {
   }
 
   Widget _buildInfoRow(String label, String value) => Padding(
-    padding: const EdgeInsets.only(bottom: 12),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '$label: ',
-          style: const TextStyle(fontWeight: FontWeight.bold),
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '$label: ',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Expanded(
+              child: Text(value),
+            ),
+          ],
         ),
-        Expanded(
-          child: Text(value),
-        ),
-      ],
-    ),
-  );
+      );
 
   void _showDeleteConfirmation(
     BuildContext context,

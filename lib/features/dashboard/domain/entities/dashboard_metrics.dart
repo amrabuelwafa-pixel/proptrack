@@ -19,11 +19,11 @@ class DashboardMetrics extends Equatable {
 
   @override
   List<Object?> get props => [
-    totalProperties,
-    totalInvested,
-    upcomingPaymentsCount,
-    upcomingPaymentsAmount,
-    overduePaymentsCount,
-    overduePaymentsAmount,
-  ];
+        totalProperties,
+        totalInvested,
+        upcomingPaymentsCount,
+        upcomingPaymentsAmount,
+        overduePaymentsCount,
+        overduePaymentsAmount,
+      ];
 }

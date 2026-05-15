@@ -23,7 +23,9 @@ class InstallmentRemoteDataSourceImpl implements InstallmentRemoteDataSource {
         .eq('user_id', userId)
         .order('due_date');
 
-    return (response as List<dynamic>).map((json) => InstallmentModel.fromJson(json as Map<String, dynamic>)).toList();
+    return (response as List<dynamic>)
+        .map((json) => InstallmentModel.fromJson(json as Map<String, dynamic>))
+        .toList();
   }
 
   @override

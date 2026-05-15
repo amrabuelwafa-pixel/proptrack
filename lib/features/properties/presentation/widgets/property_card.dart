@@ -36,8 +36,8 @@ class PropertyCard extends StatelessWidget {
                     child: Text(
                       property.name,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                            fontWeight: FontWeight.bold,
+                          ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -82,8 +82,8 @@ class PropertyCard extends StatelessWidget {
                 child: Text(
                   '${property.currency} ${NumberFormat('#,##0.00').format(property.totalPrice)}',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
               ),
               LinearProgressIndicator(

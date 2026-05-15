@@ -35,19 +35,19 @@ class PropertyEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-    id,
-    userId,
-    name,
-    developer,
-    location,
-    totalPrice,
-    currency,
-    handoverDate,
-    notes,
-    createdAt,
-    updatedAt,
-    paidAmount,
-    totalInstallments,
-    paidInstallments,
-  ];
+        id,
+        userId,
+        name,
+        developer,
+        location,
+        totalPrice,
+        currency,
+        handoverDate,
+        notes,
+        createdAt,
+        updatedAt,
+        paidAmount,
+        totalInstallments,
+        paidInstallments,
+      ];
 }

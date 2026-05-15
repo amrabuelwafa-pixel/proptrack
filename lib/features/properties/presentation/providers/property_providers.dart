@@ -12,12 +12,14 @@ import 'package:proptrack/features/properties/domain/usecases/get_properties_use
 import 'package:proptrack/features/properties/domain/usecases/get_property_by_id_usecase.dart';
 import 'package:proptrack/features/properties/domain/usecases/update_property_usecase.dart';
 
-final propertyRemoteDataSourceProvider = Provider<PropertyRemoteDataSource>((ref) {
+final propertyRemoteDataSourceProvider =
+    Provider<PropertyRemoteDataSource>((ref) {
   final client = ref.watch(supabaseClientProvider);
   return PropertyRemoteDataSourceImpl(client);
 });
 
-final propertyLocalDataSourceProvider = Provider<PropertyLocalDataSource>((ref) {
+final propertyLocalDataSourceProvider =
+    Provider<PropertyLocalDataSource>((ref) {
   final box = Hive.box<dynamic>('properties');
   return PropertyLocalDataSourceImpl(box);
 });
@@ -53,7 +55,8 @@ final deletePropertyUseCaseProvider = Provider<DeletePropertyUseCase>((ref) {
   return DeletePropertyUseCase(repository);
 });
 
-class _PropertyNotifier extends StateNotifier<AsyncValue<List<PropertyEntity>>> {
+class _PropertyNotifier
+    extends StateNotifier<AsyncValue<List<PropertyEntity>>> {
   _PropertyNotifier(this._ref) : super(const AsyncLoading()) {
     _load();
   }
@@ -66,7 +69,8 @@ class _PropertyNotifier extends StateNotifier<AsyncValue<List<PropertyEntity>>> 
       final useCase = _ref.read(getPropertiesUseCaseProvider);
       final result = await useCase();
       state = result.fold(
-        (failure) => AsyncError<List<PropertyEntity>>(failure, StackTrace.current),
+        (failure) =>
+            AsyncError<List<PropertyEntity>>(failure, StackTrace.current),
         (properties) => AsyncData(properties),
       );
     } on Exception catch (e, st) {

@@ -14,7 +14,8 @@ class AddPropertyPage extends ConsumerWidget {
       appBar: AppBar(title: const Text('Add Property')),
       body: PropertyForm(
         submitLabel: 'Save Property',
-        onSubmit: (name, developer, location, price, currency, handoverDate, notes) async {
+        onSubmit: (name, developer, location, price, currency, handoverDate,
+            notes) async {
           final notifier = ref.read(propertyNotifierProvider.notifier);
           final params = CreatePropertyParams(
             name: name,
