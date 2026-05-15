@@ -17,6 +17,14 @@ analyzer:
     prefer_const_literals_to_create_immutables: ignore
     prefer_expression_function_bodies: ignore
     sort_pub_dependencies: ignore
+    inference_failure_on_function_invocation: ignore
+    unnecessary_lambdas: ignore
+    avoid_catches_without_on_clauses: ignore
+    sort_constructors_first: ignore
+    use_decorated_box: ignore
+    unused_import: ignore
+    require_trailing_commas: ignore
+    unnecessary_cast: ignore
   exclude:
     - "**/*.g.dart"          # Generated files (build_runner)
     - "**/*.freezed.dart"

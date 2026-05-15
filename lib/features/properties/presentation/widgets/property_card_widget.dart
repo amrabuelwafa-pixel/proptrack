@@ -237,7 +237,7 @@ class PropertyCardWidget extends StatelessWidget {
 
   VoidCallback _showContextMenu(BuildContext context) {
     return () {
-      showModalBottomSheet(
+      showModalBottomSheet<void>(
         context: context,
         builder: (context) => Container(
           decoration: const BoxDecoration(
@@ -285,7 +285,7 @@ class PropertyCardWidget extends StatelessWidget {
   }
 
   void _showDeleteConfirmation(BuildContext context) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Property'),
