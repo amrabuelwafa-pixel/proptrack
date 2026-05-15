@@ -73,7 +73,6 @@ linter:
     - no_runtimeType_toString
     - noop_primitive_operations
     - only_throw_errors
-    - package_api_docs
     - prefer_asserts_in_initializer_lists
     - prefer_const_constructors               # Critical for Flutter performance
     - prefer_const_constructors_in_immutables
