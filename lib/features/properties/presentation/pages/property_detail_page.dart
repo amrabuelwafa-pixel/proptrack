@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:proptrack/core/router/route_names.dart';
 import 'package:proptrack/features/installments/presentation/providers/installment_providers.dart';
 import 'package:proptrack/features/installments/presentation/widgets/installment_tile.dart';
 import 'package:proptrack/features/properties/presentation/providers/property_providers.dart';
@@ -53,33 +52,45 @@ class PropertyDetailPage extends ConsumerWidget {
       return 'On Track';
     }
 
-    Color getStatusColor(String status) {
+    ({Color bgColor, Color textColor}) getStatusColors(String status) {
       switch (status) {
         case 'Overdue':
-          return const Color(0xFFEF4444);
+          return (
+            bgColor: const Color(0xFFFEF2F2),
+            textColor: const Color(0xFFDC2626),
+          );
         case 'Due Soon':
-          return const Color(0xFFFB923C);
+          return (
+            bgColor: const Color(0xFFFFF7ED),
+            textColor: const Color(0xFFC2410C),
+          );
         case 'Completed':
-          return _greenPaid;
-        case 'On Track':
-          return const Color(0xFFDCFCE7);
+          return (
+            bgColor: const Color(0xFFDCFCE7),
+            textColor: const Color(0xFF16A34A),
+          );
         default:
-          return _navyBlue;
+          return (
+            bgColor: const Color(0xFFDCFCE7),
+            textColor: const Color(0xFF16A34A),
+          );
       }
     }
 
-    Color getStatusTextColor(String status) {
+    Color getProgressBarColor(String status) {
       switch (status) {
-        case 'On Track':
-          return const Color(0xFF16A34A);
+        case 'Overdue':
+          return const Color(0xFFDC2626);
+        case 'Due Soon':
+          return const Color(0xFFC2410C);
         default:
-          return Colors.white;
+          return _greenPaid;
       }
     }
 
     final status = getPropertyStatus();
-    final statusColor = getStatusColor(status);
-    final statusTextColor = getStatusTextColor(status);
+    final statusColors = getStatusColors(status);
+    final progressBarColor = getProgressBarColor(status);
 
     return Scaffold(
       backgroundColor: _bgGrey,
@@ -105,127 +116,144 @@ class PropertyDetailPage extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Property Overview Card
+            // Property Info Card
             Card(
               elevation: 2,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
               ),
+              margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
               child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Stack(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    // Top row: property name + status badge
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          property.name,
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: _navyBlue,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        if (property.developer != null && property.developer!.isNotEmpty)
-                          _buildPropertyRow(
-                            Icons.business_outlined,
-                            property.developer!,
-                          ),
-                        if (property.location != null && property.location!.isNotEmpty)
-                          _buildPropertyRow(
-                            Icons.location_on_outlined,
-                            property.location!,
-                          ),
-                        if (property.handoverDate != null)
-                          _buildPropertyRow(
-                            Icons.calendar_today_outlined,
-                            DateFormat('d MMM yyyy').format(property.handoverDate!),
-                          ),
-                        const SizedBox(height: 16),
-                        Text(
-                          '${property.currency} ${NumberFormat('#,##0.00').format(property.totalPrice)}',
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w700,
-                            color: _navyBlue,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Divider(
-                          height: 1,
-                          color: Colors.grey[300],
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Payment Progress',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: LinearProgressIndicator(
-                            value: progressValue,
-                            minHeight: 6,
-                            backgroundColor: const Color(0xFFE2E8F0),
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              progressValue >= 1.0 ? _greenPaid : _navyBlue,
+                        Expanded(
+                          child: Text(
+                            property.name,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: _navyBlue,
                             ),
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '${property.paidInstallments} of ${property.totalInstallments} installments paid',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: statusColors.bgColor,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            status,
+                            style: TextStyle(
+                              color: statusColors.textColor,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
+                    const SizedBox(height: 16),
+
+                    // Developer row
+                    if (property.developer != null &&
+                        property.developer!.isNotEmpty)
+                      _buildPropertyRow(
+                        Icons.business_outlined,
+                        property.developer!,
+                      ),
+
+                    // Location row
+                    if (property.location != null &&
+                        property.location!.isNotEmpty)
+                      _buildPropertyRow(
+                        Icons.location_on_outlined,
+                        property.location!,
+                      ),
+
+                    // Handover date row
+                    if (property.handoverDate != null)
+                      _buildPropertyRow(
+                        Icons.calendar_today_outlined,
+                        DateFormat('d MMM yyyy').format(property.handoverDate!),
+                      ),
+
+                    const SizedBox(height: 12),
+                    Divider(height: 1, color: Colors.grey[300]),
+                    const SizedBox(height: 12),
+
+                    // Total price
+                    Text(
+                      '${property.currency} ${NumberFormat('#,##0.00').format(property.totalPrice)}',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: _navyBlue,
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+                    Divider(height: 1, color: Colors.grey[300]),
+                    const SizedBox(height: 12),
+
+                    // Payment Progress section
+                    Text(
+                      'Payment Progress',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: progressValue,
+                        minHeight: 6,
+                        backgroundColor: const Color(0xFFE2E8F0),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          progressBarColor,
                         ),
-                        decoration: BoxDecoration(
-                          color: statusColor,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          status,
-                          style: TextStyle(
-                            color: statusTextColor,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '${property.paidInstallments} of ${property.totalInstallments} installments paid',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
                       ),
                     ),
                   ],
                 ),
               ),
             ),
+
             const SizedBox(height: 24),
 
-            // Installments Section Title
+            // Installments Section
             Padding(
               padding: EdgeInsets.zero,
               child: Text(
                 'Installments',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: _navyBlue,
-                      fontWeight: FontWeight.w700,
-                    ),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: _navyBlue,
+                ),
               ),
             ),
+
             const SizedBox(height: 12),
 
             // Installments List
@@ -242,9 +270,10 @@ class PropertyDetailPage extends ConsumerWidget {
                   error: (error, stack) => Center(
                     child: Text(
                       'Error loading installments',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.red,
-                          ),
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 13,
+                      ),
                     ),
                   ),
                   data: (installmentsList) {
@@ -256,28 +285,36 @@ class PropertyDetailPage extends ConsumerWidget {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(
-                                Icons.inbox_outlined,
+                                Icons.calendar_today_outlined,
                                 size: 48,
                                 color: Colors.grey[400],
                               ),
                               const SizedBox(height: 12),
                               Text(
                                 'No installments yet',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.copyWith(
-                                      color: Colors.grey[600],
-                                    ),
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 14,
+                                ),
                               ),
-                              const SizedBox(height: 16),
-                              ElevatedButton.icon(
+                              const SizedBox(height: 20),
+                              ElevatedButton(
                                 onPressed: () {},
-                                icon: const Icon(Icons.add),
-                                label: const Text('Add Installment'),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: _navyBlue,
                                   foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 12,
+                                  ),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.add, size: 20),
+                                    SizedBox(width: 6),
+                                    Text('Add Installment'),
+                                  ],
                                 ),
                               ),
                             ],
@@ -285,6 +322,7 @@ class PropertyDetailPage extends ConsumerWidget {
                         ),
                       );
                     }
+
                     return Column(
                       children: installmentsList
                           .map(
@@ -301,13 +339,14 @@ class PropertyDetailPage extends ConsumerWidget {
                 );
               },
             ),
+
             const SizedBox(height: 24),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: _navyBlue,
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, color: Colors.white),
         onPressed: () {},
       ),
     );
@@ -321,15 +360,15 @@ class PropertyDetailPage extends ConsumerWidget {
             Icon(
               icon,
               color: Colors.grey[600],
-              size: 20,
+              size: 18,
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Expanded(
               child: Text(
                 value,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF64748B),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey[700],
                 ),
               ),
             ),
