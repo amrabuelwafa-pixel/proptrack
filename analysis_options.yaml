@@ -26,6 +26,9 @@ analyzer:
     require_trailing_commas: ignore
     unnecessary_cast: ignore
     deprecated_member_use: ignore
+    avoid_dynamic_calls: ignore
+    avoid_annotating_with_dynamic: ignore
+    directives_ordering: ignore
   exclude:
     - "**/*.g.dart"          # Generated files (build_runner)
     - "**/*.freezed.dart"
