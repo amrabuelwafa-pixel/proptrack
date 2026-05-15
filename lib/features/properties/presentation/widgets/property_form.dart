@@ -106,7 +106,7 @@ class _PropertyFormState extends State<PropertyForm> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    initialValue: _selectedCurrency,
+                    value: _selectedCurrency,
                     items: const [
                       DropdownMenuItem(value: 'EGP', child: Text('EGP')),
                       DropdownMenuItem(value: 'USD', child: Text('USD')),

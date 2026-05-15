@@ -53,7 +53,7 @@ class DashboardHeader extends StatelessWidget {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
+                color: Colors.black.withOpacity(0.08),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -79,7 +79,7 @@ class DashboardHeader extends StatelessWidget {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.15),
+                            color: Colors.black.withOpacity(0.15),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -125,7 +125,7 @@ class DashboardHeader extends StatelessWidget {
                           Text(
                             dateStr,
                             style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.65),
+                              color: Colors.white.withOpacity(0.65),
                               fontSize: 14,
                               fontWeight: FontWeight.w400,
                             ),
@@ -192,7 +192,7 @@ class _DecorativePatternPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.07)
+      ..color = Colors.white.withOpacity(0.07)
       ..style = PaintingStyle.fill;
 
     // Draw decorative circles on the right side
@@ -208,7 +208,7 @@ class _DecorativePatternPainter extends CustomPainter {
 
     // Draw additional smaller circles
     final smallPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.05)
+      ..color = Colors.white.withOpacity(0.05)
       ..style = PaintingStyle.fill;
 
     final smallPositions = [
