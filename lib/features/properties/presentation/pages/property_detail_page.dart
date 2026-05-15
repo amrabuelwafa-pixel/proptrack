@@ -19,7 +19,6 @@ class PropertyDetailPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final property = ref.watch(selectedPropertyProvider(propertyId));
-    final notifier = ref.read(propertyNotifierProvider.notifier);
 
     if (property == null) {
       return Scaffold(
@@ -38,8 +37,6 @@ class PropertyDetailPage extends ConsumerWidget {
     final progressValue = property.totalPrice > 0
         ? (property.paidAmount / property.totalPrice).clamp(0.0, 1.0)
         : 0.0;
-
-    final progressPercent = (progressValue * 100).toStringAsFixed(0);
 
     String getPropertyStatus() {
       if (property.totalInstallments == 0) return 'On Track';
@@ -64,13 +61,25 @@ class PropertyDetailPage extends ConsumerWidget {
           return const Color(0xFFFB923C);
         case 'Completed':
           return _greenPaid;
+        case 'On Track':
+          return const Color(0xFFDCFCE7);
         default:
           return _navyBlue;
       }
     }
 
+    Color getStatusTextColor(String status) {
+      switch (status) {
+        case 'On Track':
+          return const Color(0xFF16A34A);
+        default:
+          return Colors.white;
+      }
+    }
+
     final status = getPropertyStatus();
     final statusColor = getStatusColor(status);
+    final statusTextColor = getStatusTextColor(status);
 
     return Scaffold(
       backgroundColor: _bgGrey,
@@ -90,18 +99,6 @@ class PropertyDetailPage extends ConsumerWidget {
             fontSize: 18,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit_outlined, color: Colors.white),
-            onPressed: () => context.push('/properties/${property.id}/edit'),
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete_outlined, color: Colors.white),
-            onPressed: () => _showDeleteConfirmation(context, property.name, () {
-              _deleteProperty(context, propertyId, notifier);
-            }),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -154,6 +151,40 @@ class PropertyDetailPage extends ConsumerWidget {
                             color: _navyBlue,
                           ),
                         ),
+                        const SizedBox(height: 16),
+                        Divider(
+                          height: 1,
+                          color: Colors.grey[300],
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Payment Progress',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: progressValue,
+                            minHeight: 6,
+                            backgroundColor: const Color(0xFFE2E8F0),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              progressValue >= 1.0 ? _greenPaid : _navyBlue,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '${property.paidInstallments} of ${property.totalInstallments} installments paid',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                        ),
                       ],
                     ),
                     Positioned(
@@ -170,64 +201,13 @@ class PropertyDetailPage extends ConsumerWidget {
                         ),
                         child: Text(
                           status,
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: statusTextColor,
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Payment Progress Card
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    Text(
-                      'Payment Progress',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: _navyBlue,
-                            fontWeight: FontWeight.w700,
-                          ),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      '$progressPercent%',
-                      style: const TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w700,
-                        color: _navyBlue,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: LinearProgressIndicator(
-                        value: progressValue,
-                        minHeight: 8,
-                        backgroundColor: const Color(0xFFE2E8F0),
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          progressValue >= 1.0 ? _greenPaid : _navyBlue,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      '${property.paidInstallments} of ${property.totalInstallments} installments paid',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.grey[600],
-                          ),
                     ),
                   ],
                 ),
@@ -356,53 +336,4 @@ class PropertyDetailPage extends ConsumerWidget {
           ],
         ),
       );
-
-  void _showDeleteConfirmation(
-    BuildContext context,
-    String propertyName,
-    VoidCallback onConfirm,
-  ) =>
-      showDialog<void>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Delete Property'),
-          content: Text(
-            'Are you sure you want to delete "$propertyName"? This action cannot be undone.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                onConfirm();
-              },
-              child: const Text('Delete', style: TextStyle(color: Colors.red)),
-            ),
-          ],
-        ),
-      );
-
-  Future<void> _deleteProperty(
-    BuildContext context,
-    String id,
-    Object notifier,
-  ) async {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Deleting property...')),
-    );
-    final success = await (notifier as dynamic).delete(id) as bool;
-    if (success && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Property deleted')),
-      );
-      context.go(AppRoutes.properties);
-    } else if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to delete property')),
-      );
-    }
-  }
 }
