@@ -30,17 +30,17 @@ analyzer:
     avoid_annotating_with_dynamic: ignore
     directives_ordering: ignore
   exclude:
-    - "**/*.g.dart"          # Generated files (build_runner)
+    - "**/*.g.dart" # Generated files (build_runner)
     - "**/*.freezed.dart"
     - "**/*.gen.dart"
 
 linter:
   rules:
     # ── Error prevention ─────────────────────────────────────────────────
-    - always_use_package_imports        # No relative imports across features
+    - always_use_package_imports # No relative imports across features
     - avoid_dynamic_calls
     - avoid_empty_else
-    - avoid_print                       # Use logger package instead
+    - avoid_print # Use logger package instead
     # - avoid_returning_null_for_future  # Removed in Dart 3.3.0
     - avoid_slow_async_io
     - avoid_type_to_string
@@ -74,7 +74,7 @@ linter:
     - noop_primitive_operations
     - only_throw_errors
     - prefer_asserts_in_initializer_lists
-    - prefer_const_constructors               # Critical for Flutter performance
+    - prefer_const_constructors # Critical for Flutter performance
     - prefer_const_constructors_in_immutables
     - prefer_const_declarations
     - prefer_const_literals_to_create_immutables
@@ -91,8 +91,8 @@ linter:
     # - prefer_relative_imports  # Incompatible with always_use_package_imports
     - prefer_single_quotes
     - prefer_spread_collections
-    - require_trailing_commas               # Enforces clean dartfmt output
-    - sort_child_properties_last            # child: always last in widgets
+    - require_trailing_commas # Enforces clean dartfmt output
+    - sort_child_properties_last # child: always last in widgets
     - sort_constructors_first
     - sort_unnamed_constructors_first
     - type_annotate_public_apis
@@ -103,7 +103,7 @@ linter:
     - unnecessary_raw_strings
     - unnecessary_string_escapes
     - unnecessary_string_interpolations
-    - use_decorated_box                     # Prefer DecoratedBox over Container when no sizing
+    - use_decorated_box # Prefer DecoratedBox over Container when no sizing
     - use_enums
     - use_if_null_to_convert_nulls_to_bools
     - use_is_even_rather_than_modulo
@@ -111,7 +111,7 @@ linter:
     - use_raw_strings
     - use_setters_to_change_properties
     - use_string_buffers
-    - use_super_parameters              # Dart 3 super-parameter syntax
+    - use_super_parameters # Dart 3 super-parameter syntax
 
     # ── Pub ───────────────────────────────────────────────────────────────
     - depend_on_referenced_packages

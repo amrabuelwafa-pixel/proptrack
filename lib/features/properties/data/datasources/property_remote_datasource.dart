@@ -38,7 +38,7 @@ class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
 
     final response = await _client
         .from('properties')
-        .select('*, installments(amount, is_paid)')
+        .select('*, installments(id, amount, is_paid)')
         .eq('user_id', userId)
         .order('created_at', ascending: false);
 
@@ -54,7 +54,7 @@ class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
 
     final response = await _client
         .from('properties')
-        .select('*, installments(amount, is_paid)')
+        .select('*, installments(id, amount, is_paid)')
         .eq('id', id)
         .eq('user_id', userId)
         .single();
@@ -87,7 +87,7 @@ class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
           'handover_date': handoverDate?.toIso8601String(),
           'notes': notes,
         })
-        .select('*, installments(amount, is_paid)')
+        .select('*, installments(id, amount, is_paid)')
         .single();
 
     return PropertyModel.fromJson(response);
@@ -120,7 +120,7 @@ class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
         })
         .eq('id', id)
         .eq('user_id', userId)
-        .select('*, installments(amount, is_paid)')
+        .select('*, installments(id, amount, is_paid)')
         .single();
 
     return PropertyModel.fromJson(response);
