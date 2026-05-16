@@ -29,7 +29,10 @@ class PropertiesPage extends ConsumerWidget {
             const SizedBox(width: 8),
             const Text(
               'Properties',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 18),
+              style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 18),
             ),
           ],
         ),
@@ -46,7 +49,8 @@ class PropertiesPage extends ConsumerWidget {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => ref.invalidate(propertyNotifierProvider),
-                style: ElevatedButton.styleFrom(backgroundColor: _navy, foregroundColor: Colors.white),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: _navy, foregroundColor: Colors.white),
                 child: const Text('Retry'),
               ),
             ],
@@ -92,9 +96,12 @@ class _EmptyState extends StatelessWidget {
         children: [
           Icon(Icons.home_work_outlined, size: 64, color: Colors.grey.shade400),
           const SizedBox(height: 16),
-          const Text('No properties yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: _navy)),
+          const Text('No properties yet',
+              style: TextStyle(
+                  fontSize: 18, fontWeight: FontWeight.bold, color: _navy)),
           const SizedBox(height: 8),
-          Text('Add your first property to get started', style: TextStyle(color: Colors.grey.shade600)),
+          Text('Add your first property to get started',
+              style: TextStyle(color: Colors.grey.shade600)),
           const SizedBox(height: 24),
           SizedBox(
             width: 200,
@@ -102,7 +109,8 @@ class _EmptyState extends StatelessWidget {
               onPressed: onAdd,
               icon: const Icon(Icons.add),
               label: const Text('Add Property'),
-              style: ElevatedButton.styleFrom(backgroundColor: _navy, foregroundColor: Colors.white),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: _navy, foregroundColor: Colors.white),
             ),
           ),
         ],
@@ -115,7 +123,8 @@ class _PropertyGrid extends StatelessWidget {
   final List<PropertyEntity> properties;
   final VoidCallback onAdd;
   final WidgetRef ref;
-  const _PropertyGrid({required this.properties, required this.onAdd, required this.ref});
+  const _PropertyGrid(
+      {required this.properties, required this.onAdd, required this.ref});
 
   @override
   Widget build(BuildContext context) {
@@ -136,7 +145,8 @@ class _PropertyGrid extends StatelessWidget {
                   backgroundColor: _navy,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
                 ),
               ),
             ),
@@ -154,7 +164,8 @@ class _PropertyGrid extends StatelessWidget {
             itemBuilder: (context, i) => _PropertyCard(
               property: properties[i],
               onView: () => context.push('/properties/${properties[i].id}'),
-              onEdit: () => context.push('/properties/${properties[i].id}/edit'),
+              onEdit: () =>
+                  context.push('/properties/${properties[i].id}/edit'),
               onDelete: () => _showDeleteDialog(context, ref, properties[i]),
             ),
           ),
@@ -163,7 +174,8 @@ class _PropertyGrid extends StatelessWidget {
     );
   }
 
-  void _showDeleteDialog(BuildContext context, WidgetRef ref, PropertyEntity property) {
+  void _showDeleteDialog(
+      BuildContext context, WidgetRef ref, PropertyEntity property) {
     showDialog<void>(
       context: context,
       builder: (_) => AlertDialog(
@@ -177,7 +189,9 @@ class _PropertyGrid extends StatelessWidget {
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
-              await ref.read(propertyNotifierProvider.notifier).delete(property.id);
+              await ref
+                  .read(propertyNotifierProvider.notifier)
+                  .delete(property.id);
             },
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
@@ -199,7 +213,9 @@ class _PropertyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final progress = property.totalPrice > 0 ? property.paidAmount / property.totalPrice : 0.0;
+    final progress = property.totalPrice > 0
+        ? property.paidAmount / property.totalPrice
+        : 0.0;
     final status = _getStatus(progress);
     final statusColor = _getStatusColor(status);
     final (statusBg, statusText) = _getStatusStyle(status);
@@ -208,17 +224,29 @@ class _PropertyCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 12, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 2))
+        ],
       ),
       padding: const EdgeInsets.all(12),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(property.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _navy), maxLines: 2, overflow: TextOverflow.ellipsis),
+          Text(property.name,
+              style: const TextStyle(
+                  fontSize: 16, fontWeight: FontWeight.bold, color: _navy),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis),
           const SizedBox(height: 4),
           if (property.location?.isNotEmpty ?? false)
-            Text(property.location!, style: TextStyle(fontSize: 12, color: Colors.grey.shade500), maxLines: 1, overflow: TextOverflow.ellipsis),
+            Text(property.location!,
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis),
           const SizedBox(height: 4),
           ClipRRect(
             borderRadius: BorderRadius.circular(3),
@@ -230,7 +258,8 @@ class _PropertyCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          Text('${(progress * 100).toStringAsFixed(0)}% paid', style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+          Text('${(progress * 100).toStringAsFixed(0)}% paid',
+              style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -238,24 +267,43 @@ class _PropertyCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   '${property.currency} ${NumberFormat('#,##0').format(property.paidAmount)} / ${NumberFormat('#,##0').format(property.totalPrice)}',
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: _navy),
+                  style: const TextStyle(
+                      fontSize: 13, fontWeight: FontWeight.bold, color: _navy),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(color: statusBg, borderRadius: BorderRadius.circular(4)),
-                child: Text(status, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: statusText)),
+                decoration: BoxDecoration(
+                    color: statusBg, borderRadius: BorderRadius.circular(4)),
+                child: Text(status,
+                    style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: statusText)),
               ),
             ],
           ),
           const SizedBox(height: 8),
           Row(
             children: [
-              IconButton(icon: const Icon(Icons.visibility_outlined, size: 18), onPressed: onView, padding: EdgeInsets.zero, constraints: const BoxConstraints()),
-              IconButton(icon: const Icon(Icons.edit_outlined, size: 18), onPressed: onEdit, padding: EdgeInsets.zero, constraints: const BoxConstraints()),
-              IconButton(icon: const Icon(Icons.delete_outlined, size: 18, color: Colors.red), onPressed: onDelete, padding: EdgeInsets.zero, constraints: const BoxConstraints()),
+              IconButton(
+                  icon: const Icon(Icons.visibility_outlined, size: 18),
+                  onPressed: onView,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints()),
+              IconButton(
+                  icon: const Icon(Icons.edit_outlined, size: 18),
+                  onPressed: onEdit,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints()),
+              IconButton(
+                  icon: const Icon(Icons.delete_outlined,
+                      size: 18, color: Colors.red),
+                  onPressed: onDelete,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints()),
             ],
           ),
         ],
@@ -263,9 +311,17 @@ class _PropertyCard extends StatelessWidget {
     );
   }
 
-  String _getStatus(double progress) => progress < 0.3 ? 'Behind' : progress < 0.7 ? 'Due Soon' : 'On Track';
+  String _getStatus(double progress) => progress < 0.3
+      ? 'Behind'
+      : progress < 0.7
+          ? 'Due Soon'
+          : 'On Track';
 
-  Color _getStatusColor(String status) => status == 'On Track' ? const Color(0xFF2ECC71) : status == 'Due Soon' ? const Color(0xFFFFCC33) : const Color(0xFFEF4444);
+  Color _getStatusColor(String status) => status == 'On Track'
+      ? const Color(0xFF2ECC71)
+      : status == 'Due Soon'
+          ? const Color(0xFFFFCC33)
+          : const Color(0xFFEF4444);
 
   (Color, Color) _getStatusStyle(String status) => status == 'On Track'
       ? (const Color(0xFFE8F8F0), const Color(0xFF2ECC71))
@@ -301,7 +357,8 @@ class _AddPropertySheetState extends ConsumerState<_AddPropertySheet> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding:
+          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -309,13 +366,25 @@ class _AddPropertySheetState extends ConsumerState<_AddPropertySheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Add Property', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: _navy)),
+              const Text('Add Property',
+                  style: TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold, color: _navy)),
               const SizedBox(height: 20),
-              TextField(controller: _name, decoration: const InputDecoration(labelText: 'Property Name *'), maxLines: 1),
+              TextField(
+                  controller: _name,
+                  decoration:
+                      const InputDecoration(labelText: 'Property Name *'),
+                  maxLines: 1),
               const SizedBox(height: 12),
-              TextField(controller: _developer, decoration: const InputDecoration(labelText: 'Developer'), maxLines: 1),
+              TextField(
+                  controller: _developer,
+                  decoration: const InputDecoration(labelText: 'Developer'),
+                  maxLines: 1),
               const SizedBox(height: 12),
-              TextField(controller: _location, decoration: const InputDecoration(labelText: 'Location'), maxLines: 1),
+              TextField(
+                  controller: _location,
+                  decoration: const InputDecoration(labelText: 'Location'),
+                  maxLines: 1),
               const SizedBox(height: 12),
               Row(
                 children: [
@@ -323,15 +392,21 @@ class _AddPropertySheetState extends ConsumerState<_AddPropertySheet> {
                     flex: 2,
                     child: TextField(
                       controller: _price,
-                      decoration: const InputDecoration(labelText: 'Total Price *'),
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      decoration:
+                          const InputDecoration(labelText: 'Total Price *'),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       value: _currency,
-                      items: const [DropdownMenuItem(value: 'EGP', child: Text('EGP')), DropdownMenuItem(value: 'USD', child: Text('USD')), DropdownMenuItem(value: 'AED', child: Text('AED'))],
+                      items: const [
+                        DropdownMenuItem(value: 'EGP', child: Text('EGP')),
+                        DropdownMenuItem(value: 'USD', child: Text('USD')),
+                        DropdownMenuItem(value: 'AED', child: Text('AED'))
+                      ],
                       onChanged: (v) => setState(() => _currency = v ?? 'EGP'),
                       decoration: const InputDecoration(labelText: 'Currency'),
                     ),
@@ -348,13 +423,15 @@ class _AddPropertySheetState extends ConsumerState<_AddPropertySheet> {
                     if (price == null || price <= 0) return;
                     await widget.onSaved(CreatePropertyParams(
                       name: _name.text,
-                      developer: _developer.text.isEmpty ? null : _developer.text,
+                      developer:
+                          _developer.text.isEmpty ? null : _developer.text,
                       location: _location.text.isEmpty ? null : _location.text,
                       totalPrice: price,
                       currency: _currency,
                     ));
                   },
-                  style: ElevatedButton.styleFrom(backgroundColor: _navy, foregroundColor: Colors.white),
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: _navy, foregroundColor: Colors.white),
                   child: const Text('Add Property'),
                 ),
               ),

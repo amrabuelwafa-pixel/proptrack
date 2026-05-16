@@ -74,11 +74,13 @@ class PropertyDetailPage extends ConsumerWidget {
                       children: [
                         if (property.developer != null &&
                             property.developer!.isNotEmpty) ...[
-                          Icon(Icons.apartment, size: 14, color: Colors.grey[600]),
+                          Icon(Icons.apartment,
+                              size: 14, color: Colors.grey[600]),
                           const SizedBox(width: 4),
                           Text(
                             property.developer!,
-                            style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                            style: TextStyle(
+                                fontSize: 13, color: Colors.grey[600]),
                           ),
                         ],
                         if (property.developer != null &&
@@ -88,12 +90,14 @@ class PropertyDetailPage extends ConsumerWidget {
                           const SizedBox(width: 16),
                         if (property.location != null &&
                             property.location!.isNotEmpty) ...[
-                          Icon(Icons.location_on_outlined, size: 14, color: Colors.grey[600]),
+                          Icon(Icons.location_on_outlined,
+                              size: 14, color: Colors.grey[600]),
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
                               property.location!,
-                              style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                              style: TextStyle(
+                                  fontSize: 13, color: Colors.grey[600]),
                             ),
                           ),
                         ],
@@ -205,7 +209,8 @@ class PropertyDetailPage extends ConsumerWidget {
                         Expanded(
                           child: OutlinedButton.icon(
                             onPressed: () {},
-                            icon: const Icon(Icons.description_outlined, size: 18),
+                            icon: const Icon(Icons.description_outlined,
+                                size: 18),
                             label: const Text('View Payment Plan'),
                             style: OutlinedButton.styleFrom(
                               side: BorderSide(color: Colors.grey[400]!),
@@ -324,7 +329,8 @@ class PropertyDetailPage extends ConsumerWidget {
                             if (installmentsList.isEmpty) {
                               return Center(
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 40),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 40),
                                   child: Column(
                                     children: [
                                       Icon(
@@ -453,8 +459,8 @@ class PropertyDetailPage extends ConsumerWidget {
                                     ),
                                     // Table rows
                                     ...installmentsList.map(
-                                      (inst) =>
-                                          _InstallmentTableRow(installment: inst),
+                                      (inst) => _InstallmentTableRow(
+                                          installment: inst),
                                     ),
                                   ],
                                 );
@@ -732,7 +738,8 @@ class _InstallmentCard extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: _getStatusBgColor(status),
                     borderRadius: BorderRadius.circular(4),
@@ -781,15 +788,15 @@ class _InstallmentCard extends StatelessWidget {
                         constraints: const BoxConstraints(),
                       ),
                     IconButton(
-                      icon:
-                          const Icon(Icons.edit_outlined, size: 20, color: Colors.grey),
+                      icon: const Icon(Icons.edit_outlined,
+                          size: 20, color: Colors.grey),
                       onPressed: () {},
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                     ),
                     IconButton(
-                      icon:
-                          const Icon(Icons.delete_outline, size: 20, color: Colors.red),
+                      icon: const Icon(Icons.delete_outline,
+                          size: 20, color: Colors.red),
                       onPressed: () {},
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
