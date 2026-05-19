@@ -82,16 +82,19 @@ class _AppShellState extends State<AppShell> {
             ),
           );
         } else {
-          // Tablet/Web layout with sidebar
+          // Tablet/Web layout with sidebar.
+          // CrossAxisAlignment.stretch forces tight height constraints onto
+          // children — without it, the default center alignment passes loose
+          // height, and pages built around SingleChildScrollView shrink to
+          // their content height (leaving the rest of the viewport blank).
           return Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Sidebar
               SidebarNavigation(
                 selectedIndex: _selectedIndex,
                 items: _navItems,
                 onTap: _onNavTapped,
               ),
-              // Main content
               Expanded(
                 child: _pages[_selectedIndex],
               ),

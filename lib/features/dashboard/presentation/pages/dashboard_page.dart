@@ -1,13 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:proptrack/core/theme/app_colors.dart';
-import 'package:proptrack/features/dashboard/domain/entities/dashboard_metrics.dart';
-import 'package:proptrack/features/dashboard/domain/entities/upcoming_installment.dart';
-import 'package:proptrack/features/dashboard/presentation/providers/dashboard_providers.dart';
-import 'package:proptrack/features/dashboard/presentation/widgets/dashboard_header.dart';
-import 'package:proptrack/features/dashboard/presentation/widgets/metric_card.dart';
-import 'package:shimmer/shimmer.dart';
+import 'package:proptrack/core/theme/app_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class DashboardPage extends ConsumerWidget {
@@ -15,418 +9,455 @@ class DashboardPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final metricsAsync = ref.watch(dashboardMetricsProvider);
-    final installmentsAsync = ref.watch(nextInstallmentsProvider);
     final user = Supabase.instance.client.auth.currentUser;
-    final userName = user?.userMetadata?['name'] as String? ?? 'User';
-    final userEmail = user?.email ?? '';
+    final userName =
+        user?.userMetadata?['full_name'] as String? ?? 'User';
+    final dateText = DateFormat('EEEE, MMM d, y').format(DateTime.now());
+    final greeting = _greetingForNow();
+    final initials = _initialsFor(userName);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      body: SingleChildScrollView(
+    return ColoredBox(
+      color: AppColors.background,
+      child: SingleChildScrollView(
         physics: const ClampingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
-            DashboardHeader(
-              userName: userName,
-              userEmail: userEmail,
+            _buildHeader(greeting, userName, dateText, initials),
+            _buildStatsGrid(),
+            _buildUpcomingSection(),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(
+    String greeting,
+    String userName,
+    String dateText,
+    String initials,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.containerPadding,
+        AppSpacing.cardGap,
+        AppSpacing.containerPadding,
+        0,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$greeting, $userName',
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  dateText,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textMuted,
+                  ),
+                ),
+              ],
             ),
-            // Metrics and Content
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
+          ),
+          const SizedBox(width: 12),
+          CircleAvatar(
+            radius: 20,
+            backgroundColor: AppColors.primary,
+            child: Text(
+              initials,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatsGrid() {
+    final cards = <_StatCardData>[
+      _StatCardData(
+        label: 'Total Properties',
+        value: '8',
+        icon: Icons.home_outlined,
+        accent: AppColors.primaryLight,
+      ),
+      _StatCardData(
+        label: 'Total Invested',
+        value: 'SAR 2.4M',
+        icon: Icons.trending_up,
+        accent: AppColors.success,
+      ),
+      _StatCardData(
+        label: 'Paid This Month',
+        value: 'SAR 42,800',
+        icon: Icons.calendar_today_outlined,
+        accent: AppColors.chartBlue,
+      ),
+      _StatCardData(
+        label: 'Upcoming Payments',
+        value: 'SAR 15,200',
+        icon: Icons.notifications_outlined,
+        accent: AppColors.warningText,
+      ),
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.cardGap,
+        12,
+        AppSpacing.cardGap,
+        0,
+      ),
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: cards.length,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: 1.6,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+        ),
+        itemBuilder: (context, index) => _StatCard(data: cards[index]),
+      ),
+    );
+  }
+
+  Widget _buildUpcomingSection() {
+    const items = <_InstallmentRowData>[
+      _InstallmentRowData(
+        propertyName: 'Skyline Towers - Unit 402',
+        info: 'Milestone 4 · Structural',
+        amount: 'SAR 8,500',
+        status: _InstallmentStatus.overdue,
+      ),
+      _InstallmentRowData(
+        propertyName: 'Azure Bay Villas - Villa B',
+        info: 'Installment #12 of 24',
+        amount: 'SAR 4,200',
+        status: _InstallmentStatus.dueSoon,
+      ),
+      _InstallmentRowData(
+        propertyName: 'The Oak Residency',
+        info: 'Installment #08 of 18',
+        amount: 'SAR 2,500',
+        status: _InstallmentStatus.onTrack,
+      ),
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.cardGap,
+        AppSpacing.containerPadding,
+        AppSpacing.cardGap,
+        0,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Upcoming Installments',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
+              ),
+              TextButton(
+                onPressed: () {},
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.primaryLight,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  minimumSize: const Size(0, 36),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: const Text(
+                  'View All',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          for (final item in items) _InstallmentRow(data: item),
+        ],
+      ),
+    );
+  }
+
+  String _greetingForNow() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
+  }
+
+  String _initialsFor(String name) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return 'U';
+    final parts = trimmed.split(RegExp(r'\s+'));
+    if (parts.length == 1) {
+      return parts.first.substring(0, 1).toUpperCase();
+    }
+    return (parts.first.substring(0, 1) + parts.last.substring(0, 1))
+        .toUpperCase();
+  }
+}
+
+class _StatCardData {
+  const _StatCardData({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.accent,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color accent;
+}
+
+class _StatCard extends StatelessWidget {
+  const _StatCard({required this.data});
+
+  final _StatCardData data;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        boxShadow: AppShadows.card,
+      ),
+      child: Column(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.innerPadding),
+              child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 24),
-                  // Metrics Grid
-                  metricsAsync.when(
-                    loading: () => _buildMetricsShimmer(),
-                    error: (e, st) => _buildMetricsError(),
-                    data: (metrics) => _buildMetricsGrid(context, metrics),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Upcoming Payments Section
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                  Icon(data.icon, size: 20, color: data.accent),
+                  const SizedBox(width: 10),
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Upcoming Payments',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.textPrimary,
-                                  ),
-                            ),
-                            GestureDetector(
-                              onTap: () {},
-                              child: Text(
-                                'See all',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 12,
-                                    ),
-                              ),
-                            ),
-                          ],
+                        Text(
+                          data.value,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 16),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.06),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
+                        const SizedBox(height: 2),
+                        Text(
+                          data.label,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: AppColors.textMuted,
                           ),
-                          child: installmentsAsync.when(
-                            loading: () => _buildInstallmentsShimmer(),
-                            error: (e, st) => _buildInstallmentsError(),
-                            data: (installments) =>
-                                _buildInstallmentsList(context, installments),
-                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 32),
                 ],
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMetricsGrid(BuildContext context, DashboardMetrics metrics) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: MetricCard(
-                title: 'Total Properties',
-                value: metrics.totalProperties.toString(),
-                icon: Icons.apartment,
-                accentColor: AppColors.primary,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: MetricCard(
-                title: 'Total Invested',
-                value: NumberFormat('#,##0').format(metrics.totalInvested),
-                subtitle: 'EGP',
-                icon: Icons.trending_up,
-                accentColor: const Color(0xFF15803D),
-                currencySymbol: 'E£',
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: MetricCard(
-                title: 'Upcoming',
-                value: metrics.upcomingPaymentsCount.toString(),
-                subtitle:
-                    '${NumberFormat('#,##0').format(metrics.upcomingPaymentsAmount)} EGP',
-                icon: Icons.calendar_today,
-                accentColor: const Color(0xFFB45309),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: MetricCard(
-                title: 'Overdue',
-                value: metrics.overduePaymentsCount.toString(),
-                subtitle:
-                    '${NumberFormat('#,##0').format(metrics.overduePaymentsAmount)} EGP',
-                icon: Icons.warning,
-                accentColor: const Color(0xFFB91C1C),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMetricsShimmer() {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(child: _shimmerCard()),
-            const SizedBox(width: 12),
-            Expanded(child: _shimmerCard()),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(child: _shimmerCard()),
-            const SizedBox(width: 12),
-            Expanded(child: _shimmerCard()),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _shimmerCard() {
-    return Shimmer.fromColors(
-      baseColor: Colors.grey[200]!,
-      highlightColor: Colors.grey[50]!,
-      child: Container(
-        height: 100,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMetricsError() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFEBEE),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        'Unable to load metrics',
-        style: TextStyle(color: Colors.red[700]),
-      ),
-    );
-  }
-
-  Widget _buildInstallmentsList(
-    BuildContext context,
-    List<UpcomingInstallment> installments,
-  ) {
-    if (installments.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(32),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 4,
-              offset: const Offset(0, 1),
-            ),
-          ],
-        ),
-        child: Center(
-          child: Column(
-            children: [
-              Icon(Icons.check_circle, size: 56, color: Colors.green[400]),
-              const SizedBox(height: 16),
-              Text(
-                "You're all caught up!",
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'No payments due in the next 30 days',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-              ),
-            ],
           ),
-        ),
-      );
-    }
-
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: installments.length,
-      separatorBuilder: (_, __) => Divider(
-        color: Colors.grey[200],
-        height: 1,
-        thickness: 1,
-      ),
-      itemBuilder: (context, index) {
-        final inst = installments[index];
-        final daysUntilDue = inst.dueDate.difference(DateTime.now()).inDays;
-        final indicatorColor =
-            inst.isOverdue ? const Color(0xFFB91C1C) : const Color(0xFFB45309);
-
-        return Container(
-          color: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-          child: Row(
-            children: [
-              Container(
-                width: 6,
-                height: 6,
-                decoration: BoxDecoration(
-                  color: indicatorColor,
-                  shape: BoxShape.circle,
-                ),
+          Container(
+            height: 3,
+            decoration: BoxDecoration(
+              color: data.accent,
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(2),
+                bottomRight: Radius.circular(2),
               ),
-              const SizedBox(width: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+enum _InstallmentStatus { overdue, dueSoon, onTrack }
+
+class _InstallmentRowData {
+  const _InstallmentRowData({
+    required this.propertyName,
+    required this.info,
+    required this.amount,
+    required this.status,
+  });
+
+  final String propertyName;
+  final String info;
+  final String amount;
+  final _InstallmentStatus status;
+}
+
+class _InstallmentRow extends StatelessWidget {
+  const _InstallmentRow({required this.data});
+
+  final _InstallmentRowData data;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = _accentColor(data.status);
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        boxShadow: AppShadows.card,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(width: 4, color: accent),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
-                      inst.propertyName,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            data.propertyName,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            data.info,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textMuted,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 3),
-                    Text(
-                      DateFormat('MMM d, yyyy').format(inst.dueDate),
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: AppColors.textSecondary,
-                      ),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          data.amount,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        _StatusChip(status: data.status),
+                      ],
                     ),
                   ],
                 ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    '${NumberFormat('#,##0.00').format(inst.amount)} EGP',
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    inst.isOverdue
-                        ? 'Overdue by ${daysUntilDue.abs()} days'
-                        : 'Due in $daysUntilDue days',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: inst.isOverdue
-                          ? const Color(0xFFB91C1C)
-                          : AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildInstallmentsShimmer() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ListView.separated(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: 3,
-        separatorBuilder: (_, __) => Divider(
-          color: Colors.grey[200],
-          height: 1,
-          thickness: 1,
-        ),
-        itemBuilder: (_, __) {
-          return Shimmer.fromColors(
-            baseColor: Colors.grey[200]!,
-            highlightColor: Colors.grey[50]!,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-              child: Row(
-                children: [
-                  Container(
-                    width: 6,
-                    height: 6,
-                    decoration: const BoxDecoration(
-                      color: Colors.grey,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          height: 14,
-                          width: 120,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Container(
-                          height: 12,
-                          width: 80,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
             ),
-          );
-        },
+          ],
+        ),
+        ),
       ),
     );
   }
 
-  Widget _buildInstallmentsError() {
+  Color _accentColor(_InstallmentStatus status) {
+    switch (status) {
+      case _InstallmentStatus.overdue:
+        return AppColors.danger;
+      case _InstallmentStatus.dueSoon:
+        return AppColors.warningText;
+      case _InstallmentStatus.onTrack:
+        return AppColors.success;
+    }
+  }
+}
+
+class _StatusChip extends StatelessWidget {
+  const _StatusChip({required this.status});
+
+  final _InstallmentStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final (label, fg, bg) = _styleFor(status);
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFEBEE),
-        borderRadius: BorderRadius.circular(12),
+        color: bg,
+        borderRadius: BorderRadius.circular(AppRadius.chip),
       ),
       child: Text(
-        'Unable to load payments',
-        style: TextStyle(color: Colors.red[700]),
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: fg,
+        ),
       ),
     );
+  }
+
+  (String, Color, Color) _styleFor(_InstallmentStatus status) {
+    switch (status) {
+      case _InstallmentStatus.overdue:
+        return ('Overdue', AppColors.danger, AppColors.dangerBg);
+      case _InstallmentStatus.dueSoon:
+        return ('Due Soon', AppColors.warningText, AppColors.warningBg);
+      case _InstallmentStatus.onTrack:
+        return ('On Track', AppColors.success, AppColors.successBg);
+    }
   }
 }

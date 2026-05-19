@@ -2,7 +2,42 @@ import 'package:flutter/material.dart';
 import 'package:proptrack/core/theme/app_colors.dart';
 import 'package:proptrack/core/theme/app_text_styles.dart';
 
+export 'package:proptrack/core/theme/app_colors.dart';
+
 const Color _navyBlue = Color(0xFF1A2B4A);
+
+abstract final class AppShadows {
+  static const List<BoxShadow> card = [
+    BoxShadow(
+      color: Color(0x14192B4A),
+      blurRadius: 12,
+      offset: Offset(0, 4),
+    ),
+  ];
+  static const List<BoxShadow> elevated = [
+    BoxShadow(
+      color: Color(0x1F1A2B4A),
+      blurRadius: 24,
+      offset: Offset(0, 8),
+    ),
+  ];
+}
+
+abstract final class AppRadius {
+  static const double card = 12;
+  static const double button = 8;
+  static const double chip = 999;
+  static const double input = 8;
+  static const double icon = 10;
+}
+
+abstract final class AppSpacing {
+  static const double base = 8;
+  static const double containerPadding = 20;
+  static const double cardGap = 16;
+  static const double sectionMargin = 32;
+  static const double innerPadding = 16;
+}
 
 abstract final class AppTheme {
   static ThemeData get light => ThemeData(

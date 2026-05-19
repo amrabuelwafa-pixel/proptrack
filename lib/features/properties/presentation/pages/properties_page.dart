@@ -2,72 +2,287 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:proptrack/core/theme/app_theme.dart';
 import 'package:proptrack/features/properties/domain/entities/property_entity.dart';
 import 'package:proptrack/features/properties/domain/repositories/property_repository.dart';
 import 'package:proptrack/features/properties/presentation/providers/property_providers.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-const Color _navy = Color(0xFF1A2B4A);
-const Color _bg = Color(0xFFF5F6FA);
-
-class PropertiesPage extends ConsumerWidget {
+class PropertiesPage extends ConsumerStatefulWidget {
   const PropertiesPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PropertiesPage> createState() => _PropertiesPageState();
+}
+
+class _PropertiesPageState extends ConsumerState<PropertiesPage> {
+  final _searchController = TextEditingController();
+  String _searchText = '';
+  String _selectedFilter = 'all';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  // PropertyEntity has no `type` field yet. Once the data layer exposes it,
+  // derive the type here so chips/filters become meaningful.
+  String _typeOf(PropertyEntity property) => 'residential';
+
+  String _initialsFor(String name) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return 'U';
+    final parts = trimmed.split(RegExp(r'\s+'));
+    if (parts.length == 1) {
+      return parts.first.substring(0, 1).toUpperCase();
+    }
+    return (parts.first.substring(0, 1) + parts.last.substring(0, 1))
+        .toUpperCase();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final user = Supabase.instance.client.auth.currentUser;
+    final userName = user?.userMetadata?['full_name'] as String? ?? 'User';
+    final initials = _initialsFor(userName);
     final state = ref.watch(propertyNotifierProvider);
 
-    return Scaffold(
-      backgroundColor: _bg,
-      appBar: AppBar(
-        backgroundColor: _navy,
-        elevation: 0,
-        centerTitle: true,
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.apartment_rounded, color: Colors.white, size: 20),
-            const SizedBox(width: 8),
-            const Text(
-              'Properties',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 18),
-            ),
-          ],
-        ),
-      ),
-      body: state.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+    return Material(
+      color: Colors.transparent,
+      child: DefaultTextStyle.merge(
+        style: const TextStyle(decoration: TextDecoration.none),
+        child: ColoredBox(
+          color: AppColors.background,
+          child: Stack(
             children: [
-              Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
-              const SizedBox(height: 12),
-              Text('$e', textAlign: TextAlign.center),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => ref.invalidate(propertyNotifierProvider),
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: _navy, foregroundColor: Colors.white),
-                child: const Text('Retry'),
+              SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeader(initials),
+                    _buildSearch(),
+                    _buildFilterChips(),
+                    const SizedBox(height: 4),
+                    _buildList(state),
+                    const SizedBox(height: 96),
+                  ],
+                ),
+              ),
+              Positioned(
+                right: 16,
+                bottom: 16,
+                child: FloatingActionButton(
+                  heroTag: 'properties_fab',
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  onPressed: _showAddSheet,
+                  child: const Icon(Icons.add),
+                ),
               ),
             ],
           ),
         ),
-        data: (properties) => properties.isEmpty
-            ? _EmptyState(onAdd: () => _showAddSheet(context, ref))
-            : _PropertyGrid(
-                properties: properties,
-                onAdd: () => _showAddSheet(context, ref),
-                ref: ref,
-              ),
       ),
     );
   }
 
-  void _showAddSheet(BuildContext context, WidgetRef ref) {
+  Widget _buildHeader(String initials) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.containerPadding,
+        AppSpacing.cardGap,
+        AppSpacing.containerPadding,
+        0,
+      ),
+      child: Row(
+        children: [
+          const Expanded(
+            child: Text(
+              'My Properties',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: AppColors.primary,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 12),
+          CircleAvatar(
+            radius: 20,
+            backgroundColor: AppColors.primary,
+            child: Text(
+              initials,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearch() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.cardGap,
+        12,
+        AppSpacing.cardGap,
+        0,
+      ),
+      child: TextField(
+        controller: _searchController,
+        onChanged: (v) => setState(() => _searchText = v),
+        style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+        decoration: InputDecoration(
+          hintText: 'Search property name or city...',
+          hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 14),
+          prefixIcon: const Icon(
+            Icons.search_outlined,
+            color: AppColors.textMuted,
+            size: 20,
+          ),
+          filled: true,
+          fillColor: Colors.white,
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppRadius.input),
+            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppRadius.input),
+            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppRadius.input),
+            borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterChips() {
+    const filters = <(String, String)>[
+      ('all', 'All'),
+      ('residential', 'Residential'),
+      ('commercial', 'Commercial'),
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.cardGap,
+        AppSpacing.base,
+        AppSpacing.cardGap,
+        0,
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            for (final (id, label) in filters)
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: _FilterChip(
+                  label: label,
+                  selected: _selectedFilter == id,
+                  onTap: () => setState(() => _selectedFilter = id),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildList(AsyncValue<List<PropertyEntity>> state) {
+    return state.when(
+      loading: () => const Padding(
+        padding: EdgeInsets.symmetric(vertical: 64),
+        child: Center(child: CircularProgressIndicator()),
+      ),
+      error: (e, _) => Padding(
+        padding: const EdgeInsets.all(32),
+        child: Center(
+          child: Text(
+            'Unable to load properties\n$e',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.textMuted),
+          ),
+        ),
+      ),
+      data: (properties) {
+        final query = _searchText.trim().toLowerCase();
+        final filtered = properties.where((p) {
+          final type = _typeOf(p);
+          final matchesChip =
+              _selectedFilter == 'all' || type == _selectedFilter;
+          final matchesSearch = query.isEmpty ||
+              p.name.toLowerCase().contains(query) ||
+              (p.location?.toLowerCase().contains(query) ?? false);
+          return matchesChip && matchesSearch;
+        }).toList();
+
+        if (filtered.isEmpty) {
+          return _buildEmptyState();
+        }
+
+        return Column(
+          children: [
+            for (final p in filtered)
+              _PropertyCard(
+                property: p,
+                type: _typeOf(p),
+                onView: () => context.push('/properties/${p.id}'),
+                onEdit: () => context.push('/properties/${p.id}/edit'),
+                onDelete: () => _showDeleteDialog(p),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Padding(
+      padding: const EdgeInsets.all(64),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.home_work_outlined,
+              size: 64,
+              color: AppColors.textMuted,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'No properties yet',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Tap + to add your first property',
+              style: TextStyle(fontSize: 13, color: AppColors.textMuted),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAddSheet() {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -82,100 +297,8 @@ class PropertiesPage extends ConsumerWidget {
       ),
     );
   }
-}
 
-class _EmptyState extends StatelessWidget {
-  final VoidCallback onAdd;
-  const _EmptyState({required this.onAdd});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.home_work_outlined, size: 64, color: Colors.grey.shade400),
-          const SizedBox(height: 16),
-          const Text('No properties yet',
-              style: TextStyle(
-                  fontSize: 18, fontWeight: FontWeight.bold, color: _navy)),
-          const SizedBox(height: 8),
-          Text('Add your first property to get started',
-              style: TextStyle(color: Colors.grey.shade600)),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: 200,
-            child: ElevatedButton.icon(
-              onPressed: onAdd,
-              icon: const Icon(Icons.add),
-              label: const Text('Add Property'),
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: _navy, foregroundColor: Colors.white),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PropertyGrid extends StatelessWidget {
-  final List<PropertyEntity> properties;
-  final VoidCallback onAdd;
-  final WidgetRef ref;
-  const _PropertyGrid(
-      {required this.properties, required this.onAdd, required this.ref});
-
-  @override
-  Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final isWide = width > 600;
-    return Column(
-      children: [
-        if (!isWide)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: onAdd,
-                icon: const Icon(Icons.add, size: 18),
-                label: const Text('Add Property'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _navy,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
-                ),
-              ),
-            ),
-          ),
-        Expanded(
-          child: GridView.builder(
-            padding: const EdgeInsets.all(16),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: isWide ? 2 : 1,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              mainAxisExtent: 170,
-            ),
-            itemCount: properties.length,
-            itemBuilder: (context, i) => _PropertyCard(
-              property: properties[i],
-              onView: () => context.push('/properties/${properties[i].id}'),
-              onEdit: () =>
-                  context.push('/properties/${properties[i].id}/edit'),
-              onDelete: () => _showDeleteDialog(context, ref, properties[i]),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  void _showDeleteDialog(
-      BuildContext context, WidgetRef ref, PropertyEntity property) {
+  void _showDeleteDialog(PropertyEntity property) {
     showDialog<void>(
       context: context,
       builder: (_) => AlertDialog(
@@ -193,146 +316,332 @@ class _PropertyGrid extends StatelessWidget {
                   .read(propertyNotifierProvider.notifier)
                   .delete(property.id);
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: const Text(
+              'Delete',
+              style: TextStyle(color: AppColors.danger),
+            ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _FilterChip extends StatelessWidget {
+  const _FilterChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadius.chip),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: selected ? AppColors.primary : Colors.white,
+            borderRadius: BorderRadius.circular(AppRadius.chip),
+            border: selected
+                ? null
+                : Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: selected ? Colors.white : AppColors.textMuted,
+            ),
+          ),
+        ),
       ),
     );
   }
 }
 
 class _PropertyCard extends StatelessWidget {
-  final PropertyEntity property;
-  final VoidCallback onView, onEdit, onDelete;
   const _PropertyCard({
     required this.property,
+    required this.type,
     required this.onView,
     required this.onEdit,
     required this.onDelete,
   });
 
+  final PropertyEntity property;
+  final String type;
+  final VoidCallback onView;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  static const _residentialBg = Color(0xFFDCFCE7);
+  static const _residentialIcon = Color(0xFF16A34A);
+  static const _residentialChipText = Color(0xFF065F46);
+  static const _commercialBg = Color(0xFFDBEAFE);
+  static const _commercialIcon = Color(0xFF2563EB);
+  static const _commercialChipText = Color(0xFF1D4ED8);
+  static const _outline = Color(0xFFE2E8F0);
+  static const _progressGreen = Color(0xFF16A34A);
+  static const _progressAmber = Color(0xFFD97706);
+  static const _progressRed = Color(0xFFDC2626);
+
   @override
   Widget build(BuildContext context) {
+    final isResidential = type == 'residential';
+    final iconBg = isResidential ? _residentialBg : _commercialBg;
+    final iconColor = isResidential ? _residentialIcon : _commercialIcon;
+    final chipBg = isResidential ? _residentialBg : _commercialBg;
+    final chipText = isResidential ? _residentialChipText : _commercialChipText;
+    final chipLabel = isResidential ? 'Residential' : 'Commercial';
+
     final progress = property.totalPrice > 0
-        ? property.paidAmount / property.totalPrice
+        ? (property.paidAmount / property.totalPrice).clamp(0.0, 1.0)
         : 0.0;
-    final status = _getStatus(progress);
-    final statusColor = _getStatusColor(status);
-    final (statusBg, statusText) = _getStatusStyle(status);
+    final progressColor = progress > 0.7
+        ? _progressGreen
+        : progress > 0.4
+            ? _progressAmber
+            : _progressRed;
+    final currency = NumberFormat.currency(symbol: 'SAR ', decimalDigits: 0);
 
     return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 12,
-              offset: const Offset(0, 2))
-        ],
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: _outline),
+        boxShadow: AppShadows.card,
       ),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(AppSpacing.innerPadding),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(property.name,
-              style: const TextStyle(
-                  fontSize: 16, fontWeight: FontWeight.bold, color: _navy),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis),
-          const SizedBox(height: 4),
-          if (property.location?.isNotEmpty ?? false)
-            Text(property.location!,
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis),
-          const SizedBox(height: 4),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  borderRadius: BorderRadius.circular(AppRadius.icon),
+                ),
+                child: Icon(
+                  isResidential ? Icons.home_outlined : Icons.business_outlined,
+                  color: iconColor,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      property.name,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if ((property.location ?? '').isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.location_on_outlined,
+                            size: 12,
+                            color: AppColors.textMuted,
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              property.location!,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textMuted,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: chipBg,
+                  borderRadius: BorderRadius.circular(AppRadius.chip),
+                ),
+                child: Text(
+                  chipLabel,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: chipText,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Divider(height: 1, thickness: 1, color: _outline),
+          ),
+          Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  'Installment Progress',
+                  style: TextStyle(fontSize: 11, color: AppColors.textMuted),
+                ),
+              ),
+              Text(
+                '${(progress * 100).toStringAsFixed(0)}%',
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
           ClipRRect(
             borderRadius: BorderRadius.circular(3),
             child: LinearProgressIndicator(
               value: progress,
-              minHeight: 5,
-              backgroundColor: Colors.grey.shade300,
-              valueColor: AlwaysStoppedAnimation(statusColor),
+              minHeight: 6,
+              backgroundColor: _outline,
+              valueColor: AlwaysStoppedAnimation<Color>(progressColor),
             ),
           ),
-          const SizedBox(height: 4),
-          Text('${(progress * 100).toStringAsFixed(0)}% paid',
-              style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
-          const SizedBox(height: 8),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Divider(height: 1, thickness: 1, color: _outline),
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Text(
-                  '${property.currency} ${NumberFormat('#,##0').format(property.paidAmount)} / ${NumberFormat('#,##0').format(property.totalPrice)}',
-                  style: const TextStyle(
-                      fontSize: 13, fontWeight: FontWeight.bold, color: _navy),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                    color: statusBg, borderRadius: BorderRadius.circular(4)),
-                child: Text(status,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'PAID TO DATE',
                     style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: statusText)),
+                      fontSize: 10,
+                      color: AppColors.textMuted,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    currency.format(property.paidAmount),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  const Text(
+                    'TOTAL VALUE',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: AppColors.textMuted,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    currency.format(property.totalPrice),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Divider(height: 1, thickness: 1, color: _outline),
+          ),
           Row(
             children: [
               IconButton(
-                  icon: const Icon(Icons.visibility_outlined, size: 18),
-                  onPressed: onView,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints()),
+                onPressed: onEdit,
+                icon: const Icon(Icons.edit_outlined, size: 18),
+                color: AppColors.textMuted,
+                visualDensity: VisualDensity.compact,
+              ),
+              const SizedBox(width: 4),
               IconButton(
-                  icon: const Icon(Icons.edit_outlined, size: 18),
-                  onPressed: onEdit,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints()),
-              IconButton(
-                  icon: const Icon(Icons.delete_outlined,
-                      size: 18, color: Colors.red),
-                  onPressed: onDelete,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints()),
+                onPressed: onDelete,
+                icon: const Icon(Icons.delete_outline, size: 18),
+                color: AppColors.danger,
+                visualDensity: VisualDensity.compact,
+              ),
+              const Spacer(),
+              OutlinedButton(
+                onPressed: onView,
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: AppColors.primary),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.button),
+                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  foregroundColor: AppColors.primary,
+                ),
+                child: const Text(
+                  'VIEW PROPERTY',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
             ],
           ),
         ],
       ),
     );
   }
-
-  String _getStatus(double progress) => progress < 0.3
-      ? 'Behind'
-      : progress < 0.7
-          ? 'Due Soon'
-          : 'On Track';
-
-  Color _getStatusColor(String status) => status == 'On Track'
-      ? const Color(0xFF2ECC71)
-      : status == 'Due Soon'
-          ? const Color(0xFFFFCC33)
-          : const Color(0xFFEF4444);
-
-  (Color, Color) _getStatusStyle(String status) => status == 'On Track'
-      ? (const Color(0xFFE8F8F0), const Color(0xFF2ECC71))
-      : status == 'Due Soon'
-          ? (const Color(0xFFFFF8E1), const Color(0xFFFFCC33))
-          : (const Color(0xFFFFEBEE), const Color(0xFFEF4444));
 }
 
 class _AddPropertySheet extends ConsumerStatefulWidget {
-  final Future<void> Function(CreatePropertyParams) onSaved;
   const _AddPropertySheet({required this.onSaved});
+
+  final Future<void> Function(CreatePropertyParams) onSaved;
 
   @override
   ConsumerState<_AddPropertySheet> createState() => _AddPropertySheetState();
@@ -366,25 +675,32 @@ class _AddPropertySheetState extends ConsumerState<_AddPropertySheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Add Property',
-                  style: TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.bold, color: _navy)),
+              const Text(
+                'Add Property',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
+              ),
               const SizedBox(height: 20),
               TextField(
-                  controller: _name,
-                  decoration:
-                      const InputDecoration(labelText: 'Property Name *'),
-                  maxLines: 1),
+                controller: _name,
+                decoration: const InputDecoration(labelText: 'Property Name *'),
+                maxLines: 1,
+              ),
               const SizedBox(height: 12),
               TextField(
-                  controller: _developer,
-                  decoration: const InputDecoration(labelText: 'Developer'),
-                  maxLines: 1),
+                controller: _developer,
+                decoration: const InputDecoration(labelText: 'Developer'),
+                maxLines: 1,
+              ),
               const SizedBox(height: 12),
               TextField(
-                  controller: _location,
-                  decoration: const InputDecoration(labelText: 'Location'),
-                  maxLines: 1),
+                controller: _location,
+                decoration: const InputDecoration(labelText: 'Location'),
+                maxLines: 1,
+              ),
               const SizedBox(height: 12),
               Row(
                 children: [
@@ -405,7 +721,7 @@ class _AddPropertySheetState extends ConsumerState<_AddPropertySheet> {
                       items: const [
                         DropdownMenuItem(value: 'EGP', child: Text('EGP')),
                         DropdownMenuItem(value: 'USD', child: Text('USD')),
-                        DropdownMenuItem(value: 'AED', child: Text('AED'))
+                        DropdownMenuItem(value: 'AED', child: Text('AED')),
                       ],
                       onChanged: (v) => setState(() => _currency = v ?? 'EGP'),
                       decoration: const InputDecoration(labelText: 'Currency'),
@@ -431,7 +747,9 @@ class _AddPropertySheetState extends ConsumerState<_AddPropertySheet> {
                     ));
                   },
                   style: ElevatedButton.styleFrom(
-                      backgroundColor: _navy, foregroundColor: Colors.white),
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                  ),
                   child: const Text('Add Property'),
                 ),
               ),
