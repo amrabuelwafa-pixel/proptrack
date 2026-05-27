@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:proptrack/core/theme/app_colors.dart';
 import 'package:proptrack/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:proptrack/features/profile/presentation/pages/profile_page.dart';
 import 'package:proptrack/features/properties/presentation/pages/properties_page.dart';
@@ -16,6 +15,11 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   int _selectedIndex = 0;
 
+  // Design system tokens (per DESIGN_DASGBOARD.md)
+  static const _surface = Color(0xFFF7F9FB);
+  static const _onSurfaceVariant = Color(0xFF44474D);
+  static const _navy = Color(0xFF0A1A33);
+
   final List<Widget> _pages = const [
     DashboardPage(),
     PropertiesPage(),
@@ -23,7 +27,7 @@ class _AppShellState extends State<AppShell> {
     SettingsPage(),
   ];
 
-  final List<NavItem> _navItems = const [
+  static const List<NavItem> _navItems = [
     NavItem(
       icon: Icons.dashboard_outlined,
       activeIcon: Icons.dashboard,
@@ -35,7 +39,7 @@ class _AppShellState extends State<AppShell> {
       label: 'Properties',
     ),
     NavItem(
-      icon: Icons.person_outlined,
+      icon: Icons.person_outline,
       activeIcon: Icons.person,
       label: 'Profile',
     ),
@@ -47,28 +51,26 @@ class _AppShellState extends State<AppShell> {
   ];
 
   void _onNavTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    setState(() => _selectedIndex = index);
   }
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isMobile = constraints.maxWidth < 600;
+        final isMobile = constraints.maxWidth < 768;
 
         if (isMobile) {
-          // Mobile layout with bottom navigation
           return Scaffold(
+            backgroundColor: _surface,
             body: _pages[_selectedIndex],
             bottomNavigationBar: BottomNavigationBar(
               type: BottomNavigationBarType.fixed,
               currentIndex: _selectedIndex,
               onTap: _onNavTapped,
               backgroundColor: Colors.white,
-              selectedItemColor: AppColors.primary,
-              unselectedItemColor: Colors.grey,
+              selectedItemColor: _navy,
+              unselectedItemColor: _onSurfaceVariant,
               elevation: 8,
               items: _navItems
                   .map(
@@ -81,26 +83,22 @@ class _AppShellState extends State<AppShell> {
                   .toList(),
             ),
           );
-        } else {
-          // Tablet/Web layout with sidebar.
-          // CrossAxisAlignment.stretch forces tight height constraints onto
-          // children — without it, the default center alignment passes loose
-          // height, and pages built around SingleChildScrollView shrink to
-          // their content height (leaving the rest of the viewport blank).
-          return Row(
+        }
+
+        return Scaffold(
+          backgroundColor: _surface,
+          body: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              SidebarNavigation(
+              _Sidebar(
                 selectedIndex: _selectedIndex,
                 items: _navItems,
                 onTap: _onNavTapped,
               ),
-              Expanded(
-                child: _pages[_selectedIndex],
-              ),
+              Expanded(child: _pages[_selectedIndex]),
             ],
-          );
-        }
+          ),
+        );
       },
     );
   }
@@ -118,201 +116,184 @@ class NavItem {
   final String label;
 }
 
-class SidebarNavigation extends StatelessWidget {
-  const SidebarNavigation({
+// ─────────────────────────────────────────────────────────────────────────
+// Sidebar
+// ─────────────────────────────────────────────────────────────────────────
+
+class _Sidebar extends StatelessWidget {
+  const _Sidebar({
     required this.selectedIndex,
     required this.items,
     required this.onTap,
-    super.key,
   });
 
   final int selectedIndex;
   final List<NavItem> items;
   final void Function(int) onTap;
 
+  static const _navy = Color(0xFF0A1A33);
+  static const _onSurfaceVariant = Color(0xFF44474D);
+  static const _outlineVariant = Color(0xFFC5C6CE);
+
   @override
   Widget build(BuildContext context) {
     final user = Supabase.instance.client.auth.currentUser;
-    final userName = user?.userMetadata?['name'] as String? ?? 'User';
-    final userEmail = user?.email ?? 'user@example.com';
-    final userInitial = userName.isNotEmpty ? userName[0].toUpperCase() : 'U';
+    final fullName = user?.userMetadata?['full_name'] as String? ??
+        user?.userMetadata?['name'] as String? ??
+        'User';
+    final firstName = fullName.split(' ').first;
 
     return Container(
       width: 240,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(
-          right: BorderSide(
-            color: const Color(0xFFE2E8F0),
-            width: 1,
-          ),
+          right: BorderSide(color: _outlineVariant, width: 1),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(10),
-            blurRadius: 8,
-            offset: const Offset(4, 0),
-          ),
-        ],
       ),
       child: SafeArea(
         child: Column(
           children: [
-            // Logo area
-            Container(
-              height: 80,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: const Color(0xFFE2E8F0),
-                    width: 1,
-                  ),
-                ),
-              ),
+            // Header: logo + brand
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Container(
+                  Image.asset(
+                    'assets/images/logo.png',
                     width: 40,
                     height: 40,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.apartment,
-                        color: Colors.white,
-                        size: 22,
-                      ),
-                    ),
+                    filterQuality: FilterQuality.high,
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
-                    child: Text(
-                      'PropTrack',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primary,
-                        letterSpacing: -0.3,
-                      ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          'PropTrack',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: _navy,
+                            letterSpacing: -0.3,
+                            height: 1.2,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Wealth Management',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: _onSurfaceVariant,
+                            letterSpacing: 0.6,
+                            height: 1.33,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
 
-            // Navigation items
+            // Nav items
             Expanded(
-              child: ListView.separated(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                itemCount: items.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 4),
-                itemBuilder: (context, index) {
-                  final item = items[index];
-                  final isSelected = index == selectedIndex;
-
-                  return _NavItemWidget(
-                    item: item,
-                    isSelected: isSelected,
-                    onTap: () => onTap(index),
-                  );
-                },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: ListView.separated(
+                  padding: EdgeInsets.zero,
+                  itemCount: items.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 4),
+                  itemBuilder: (context, index) {
+                    return _NavItemWidget(
+                      item: items[index],
+                      isSelected: index == selectedIndex,
+                      onTap: () => onTap(index),
+                    );
+                  },
+                ),
               ),
             ),
 
-            // User profile section
-            Container(
-              decoration: BoxDecoration(
-                border: Border(
-                  top: BorderSide(
-                    color: const Color(0xFFE2E8F0),
-                    width: 1,
-                  ),
-                ),
-              ),
-              padding: const EdgeInsets.all(16),
+            // Footer: user pill + logout
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // User info
-                  Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.primary.withAlpha(25),
+                  // User pill (name only — avatar moved to dashboard hero)
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {},
+                      borderRadius: BorderRadius.circular(8),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
                         ),
-                        child: Center(
-                          child: Text(
-                            userInitial,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
                           children: [
-                            Text(
-                              userName,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                            const Icon(
+                              Icons.account_circle_outlined,
+                              size: 22,
+                              color: _onSurfaceVariant,
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              userEmail,
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: AppColors.textSecondary,
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                firstName,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: _onSurfaceVariant,
+                                  letterSpacing: 0.6,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
                       ),
-                    ],
+                    ),
                   ),
-                  const SizedBox(height: 12),
-                  // Logout button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 40,
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () async {
-                          await Supabase.instance.client.auth.signOut();
-                        },
-                        borderRadius: BorderRadius.circular(8),
+                  // Logout
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () async {
+                        await Supabase.instance.client.auth.signOut();
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.logout,
-                              color: Color(0xFFDC2626),
                               size: 18,
+                              color: Color(0xFFBA1A1A),
                             ),
-                            const SizedBox(width: 8),
-                            const Text(
+                            SizedBox(width: 12),
+                            Text(
                               'Logout',
                               style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFFDC2626),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFFBA1A1A),
+                                letterSpacing: 0.6,
                               ),
                             ),
                           ],
@@ -346,49 +327,51 @@ class _NavItemWidget extends StatefulWidget {
 }
 
 class _NavItemWidgetState extends State<_NavItemWidget> {
+  static const _navy = Color(0xFF0A1A33);
+  static const _onSurfaceVariant = Color(0xFF44474D);
+  static const _surfaceContainer = Color(0xFFECEEF0);
+
   bool _isHovering = false;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: MouseRegion(
-        onEnter: (_) => setState(() => _isHovering = true),
-        onExit: (_) => setState(() => _isHovering = false),
-        child: Material(
-          color: widget.isSelected
-              ? AppColors.primary
-              : (_isHovering ? const Color(0xFFF1F5F9) : Colors.transparent),
+    final isSelected = widget.isSelected;
+    final color = isSelected
+        ? _navy
+        : (_isHovering ? _surfaceContainer : Colors.transparent);
+    final fg = isSelected ? Colors.white : _onSurfaceVariant;
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _isHovering = true),
+      onExit: (_) => setState(() => _isHovering = false),
+      child: Material(
+        color: color,
+        borderRadius: BorderRadius.circular(8),
+        child: InkWell(
+          onTap: widget.onTap,
           borderRadius: BorderRadius.circular(8),
-          child: InkWell(
-            onTap: widget.onTap,
-            borderRadius: BorderRadius.circular(8),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-              child: Row(
-                children: [
-                  Icon(
-                    widget.isSelected
-                        ? widget.item.activeIcon
-                        : widget.item.icon,
-                    color: widget.isSelected
-                        ? Colors.white
-                        : const Color(0xFF94A3B8),
-                    size: 20,
+          child: Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Icon(
+                  isSelected ? widget.item.activeIcon : widget.item.icon,
+                  size: 22,
+                  color: fg,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  widget.item.label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: fg,
+                    letterSpacing: 0.6,
                   ),
-                  const SizedBox(width: 12),
-                  Text(
-                    widget.item.label,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: widget.isSelected
-                          ? Colors.white
-                          : const Color(0xFF64748B),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
