@@ -1,8 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:proptrack/core/providers/supabase_provider.dart';
 import 'package:proptrack/features/dashboard/domain/entities/dashboard_metrics.dart';
+import 'package:proptrack/features/dashboard/domain/entities/monthly_payments.dart';
 import 'package:proptrack/features/dashboard/domain/entities/upcoming_installment.dart';
 import 'package:proptrack/features/dashboard/domain/usecases/get_dashboard_metrics_usecase.dart';
+import 'package:proptrack/features/dashboard/domain/usecases/get_monthly_payments_usecase.dart';
 import 'package:proptrack/features/dashboard/domain/usecases/get_next_installments_usecase.dart';
 import 'package:proptrack/features/properties/presentation/providers/property_providers.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -31,5 +33,18 @@ final nextInstallmentsProvider =
   return result.fold(
     (failure) => throw Exception(failure.message),
     (installments) => installments,
+  );
+});
+
+final monthlyPaymentsProvider =
+    FutureProvider<List<MonthlyPaymentBucket>>((ref) async {
+  final supabaseClient = ref.watch(supabaseClientProvider);
+
+  final useCase = GetMonthlyPaymentsUseCase(supabaseClient);
+  final result = await useCase(monthsBack: 6);
+
+  return result.fold(
+    (failure) => throw Exception(failure.message),
+    (buckets) => buckets,
   );
 });
