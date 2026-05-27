@@ -54,3 +54,6 @@ app.*.map.json
 
 # Coverage
 coverage/
+
+# Claude Code local agent settings
+.claude/
