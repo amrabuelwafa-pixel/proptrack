@@ -59,13 +59,15 @@ class GetMonthlyPaymentsUseCase {
         }
       }
 
-      final out = buckets.entries.map(
-        (e) => MonthlyPaymentBucket(
-          month: e.key,
-          paid: e.value.paid,
-          due: e.value.due,
-        ),
-      ).toList()
+      final out = buckets.entries
+          .map(
+            (e) => MonthlyPaymentBucket(
+              month: e.key,
+              paid: e.value.paid,
+              due: e.value.due,
+            ),
+          )
+          .toList()
         ..sort((a, b) => a.month.compareTo(b.month));
 
       return Right(out);

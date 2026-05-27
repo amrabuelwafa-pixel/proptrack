@@ -103,9 +103,7 @@ class _PropertiesPageState extends ConsumerState<PropertiesPage> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final isWide = constraints.maxWidth >= 1024;
-          return isWide
-              ? _buildDesktop(state)
-              : _buildMobile(state);
+          return isWide ? _buildDesktop(state) : _buildMobile(state);
         },
       ),
     );
@@ -650,9 +648,8 @@ class _DesktopPropertyCardState extends State<_DesktopPropertyCard> {
   @override
   Widget build(BuildContext context) {
     final p = widget.property;
-    final progress = p.totalPrice > 0
-        ? (p.paidAmount / p.totalPrice).clamp(0.0, 1.0)
-        : 0.0;
+    final progress =
+        p.totalPrice > 0 ? (p.paidAmount / p.totalPrice).clamp(0.0, 1.0) : 0.0;
     final status = _statusFor(progress);
     final progressColor = switch (status) {
       _PropertyStatus.onTrack => _emerald,
@@ -1005,9 +1002,8 @@ class _MobilePropertyCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = property;
-    final progress = p.totalPrice > 0
-        ? (p.paidAmount / p.totalPrice).clamp(0.0, 1.0)
-        : 0.0;
+    final progress =
+        p.totalPrice > 0 ? (p.paidAmount / p.totalPrice).clamp(0.0, 1.0) : 0.0;
     final status = _statusFor(progress);
     final progressColor = switch (status) {
       _PropertyStatus.onTrack => _emerald,
@@ -1331,8 +1327,7 @@ class _AddPropertySheetState extends ConsumerState<_AddPropertySheet> {
               const SizedBox(height: 20),
               TextField(
                 controller: _name,
-                decoration:
-                    const InputDecoration(labelText: 'Property Name *'),
+                decoration: const InputDecoration(labelText: 'Property Name *'),
                 maxLines: 1,
               ),
               const SizedBox(height: 12),
@@ -1370,8 +1365,7 @@ class _AddPropertySheetState extends ConsumerState<_AddPropertySheet> {
                         DropdownMenuItem(value: 'USD', child: Text('USD')),
                         DropdownMenuItem(value: 'AED', child: Text('AED')),
                       ],
-                      onChanged: (v) =>
-                          setState(() => _currency = v ?? 'EGP'),
+                      onChanged: (v) => setState(() => _currency = v ?? 'EGP'),
                       decoration: const InputDecoration(
                         labelText: 'Currency',
                       ),
@@ -1392,8 +1386,7 @@ class _AddPropertySheetState extends ConsumerState<_AddPropertySheet> {
                       name: _name.text,
                       developer:
                           _developer.text.isEmpty ? null : _developer.text,
-                      location:
-                          _location.text.isEmpty ? null : _location.text,
+                      location: _location.text.isEmpty ? null : _location.text,
                       totalPrice: price,
                       currency: _currency,
                     ));

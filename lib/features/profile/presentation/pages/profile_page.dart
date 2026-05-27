@@ -271,8 +271,7 @@ class _ProfileHeaderState extends ConsumerState<_ProfileHeader> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
               minimumSize: const Size(0, 40),
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
@@ -341,7 +340,8 @@ class _MetricsRow extends ConsumerWidget {
       ),
       _MetricTileData(
         label: 'Properties',
-        value: '${m.totalProperties} ${m.totalProperties == 1 ? "Property" : "Properties"}',
+        value:
+            '${m.totalProperties} ${m.totalProperties == 1 ? "Property" : "Properties"}',
         icon: Icons.apartment_outlined,
         footer: const _MetricFooter(text: 'Active Management'),
       ),
@@ -351,8 +351,7 @@ class _MetricsRow extends ConsumerWidget {
         icon: Icons.pending_actions_outlined,
         footer: m.overduePaymentsCount > 0
             ? _MetricFooter(
-                text:
-                    '${m.overduePaymentsCount} requiring attention',
+                text: '${m.overduePaymentsCount} requiring attention',
                 icon: Icons.info_outline,
                 color: _danger,
               )
@@ -415,9 +414,8 @@ class _MetricCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final valueColor = isLoading
-        ? _onSurfaceVariant.withValues(alpha: 0.4)
-        : _onBackground;
+    final valueColor =
+        isLoading ? _onSurfaceVariant.withValues(alpha: 0.4) : _onBackground;
 
     return Container(
       decoration: BoxDecoration(
@@ -576,12 +574,10 @@ class _AccountDetailsCard extends StatelessWidget {
     final email = user?.email ?? '—';
     final emailConfirmed = user?.emailConfirmedAt != null;
     final phone = (user?.phone?.isNotEmpty ?? false) ? user!.phone : null;
-    final createdAt = user?.createdAt != null
-        ? DateTime.tryParse(user!.createdAt)
-        : null;
-    final memberSince = createdAt != null
-        ? DateFormat('MMMM y').format(createdAt)
-        : '—';
+    final createdAt =
+        user?.createdAt != null ? DateTime.tryParse(user!.createdAt) : null;
+    final memberSince =
+        createdAt != null ? DateFormat('MMMM y').format(createdAt) : '—';
 
     return Container(
       decoration: BoxDecoration(

@@ -75,9 +75,7 @@ class DashboardPage extends ConsumerWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final isWide = constraints.maxWidth >= 1024;
-          return isWide
-              ? const _DesktopDashboard()
-              : const _NarrowDashboard();
+          return isWide ? const _DesktopDashboard() : const _NarrowDashboard();
         },
       ),
     );
@@ -629,9 +627,8 @@ class _TableBodyRowState extends State<_TableBodyRow> {
       onEnter: (_) => setState(() => _hovering = true),
       onExit: (_) => setState(() => _hovering = false),
       child: Container(
-        color: _hovering
-            ? DashboardPage._surfaceContainerLow
-            : Colors.transparent,
+        color:
+            _hovering ? DashboardPage._surfaceContainerLow : Colors.transparent,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,

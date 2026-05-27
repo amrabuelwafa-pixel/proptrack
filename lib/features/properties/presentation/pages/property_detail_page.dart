@@ -142,8 +142,7 @@ class PropertyDetailPage extends ConsumerStatefulWidget {
   final String propertyId;
 
   @override
-  ConsumerState<PropertyDetailPage> createState() =>
-      _PropertyDetailPageState();
+  ConsumerState<PropertyDetailPage> createState() => _PropertyDetailPageState();
 }
 
 class _PropertyDetailPageState extends ConsumerState<PropertyDetailPage> {
@@ -352,8 +351,8 @@ class _PropertyDetailPageState extends ConsumerState<PropertyDetailPage> {
               child: isWide
                   ? _buildHeroDesktop(property, remaining, progress,
                       progressPct, paidCount, totalCount)
-                  : _buildHeroMobile(property, remaining, progress,
-                      progressPct, paidCount, totalCount),
+                  : _buildHeroMobile(property, remaining, progress, progressPct,
+                      paidCount, totalCount),
             ),
           ],
         ),
@@ -816,8 +815,7 @@ class _PropertyDetailPageState extends ConsumerState<PropertyDetailPage> {
   Widget _buildInstallmentsSection({required bool isWide}) {
     return Consumer(
       builder: (context, ref, _) {
-        final state =
-            ref.watch(installmentNotifierProvider(widget.propertyId));
+        final state = ref.watch(installmentNotifierProvider(widget.propertyId));
 
         return state.when(
           loading: () => Container(
@@ -892,10 +890,10 @@ class _PropertyDetailPageState extends ConsumerState<PropertyDetailPage> {
             else
               _DesktopInstallmentsTable(
                 installments: filtered,
-                propertyCurrency:
-                    ref.read(selectedPropertyProvider(widget.propertyId))
-                            ?.currency ??
-                        'USD',
+                propertyCurrency: ref
+                        .read(selectedPropertyProvider(widget.propertyId))
+                        ?.currency ??
+                    'USD',
                 onMarkPaid: _toggleMarkPaid,
               ),
           ],
@@ -934,10 +932,10 @@ class _PropertyDetailPageState extends ConsumerState<PropertyDetailPage> {
               for (final inst in filtered) ...[
                 _MobileInstallmentCard(
                   installment: inst,
-                  currency:
-                      ref.read(selectedPropertyProvider(widget.propertyId))
-                              ?.currency ??
-                          'USD',
+                  currency: ref
+                          .read(selectedPropertyProvider(widget.propertyId))
+                          ?.currency ??
+                      'USD',
                   onMarkPaid: () => _toggleMarkPaid(inst),
                 ),
                 const SizedBox(height: 12),
@@ -953,8 +951,7 @@ class _PropertyDetailPageState extends ConsumerState<PropertyDetailPage> {
       padding: const EdgeInsets.symmetric(vertical: 60),
       child: Column(
         children: [
-          Icon(Icons.calendar_today_outlined,
-              size: 48, color: _outlineVariant),
+          Icon(Icons.calendar_today_outlined, size: 48, color: _outlineVariant),
           const SizedBox(height: 12),
           const Text(
             'No installments yet',
@@ -1220,9 +1217,8 @@ class _DesktopInstallmentRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final status = _statusFor(installment);
     final dueLabel = _formatDueLabel(installment);
-    final isOverdueOrPending =
-        status.status == _InstallmentStatus.overdue ||
-            status.status == _InstallmentStatus.pending;
+    final isOverdueOrPending = status.status == _InstallmentStatus.overdue ||
+        status.status == _InstallmentStatus.pending;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -1275,8 +1271,9 @@ class _DesktopInstallmentRow extends StatelessWidget {
                     dueLabel,
                     style: TextStyle(
                       fontSize: 14,
-                      fontWeight:
-                          isOverdueOrPending ? FontWeight.w600 : FontWeight.w400,
+                      fontWeight: isOverdueOrPending
+                          ? FontWeight.w600
+                          : FontWeight.w400,
                       color: status.status == _InstallmentStatus.overdue
                           ? _danger
                           : (status.status == _InstallmentStatus.pending
