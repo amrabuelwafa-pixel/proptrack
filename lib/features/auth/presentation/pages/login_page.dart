@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:proptrack/core/constants/supabase_constants.dart';
 import 'package:proptrack/core/theme/app_colors.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -82,7 +83,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     try {
       await Supabase.instance.client.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: 'http://localhost:3000',
+        redirectTo: SupabaseConstants.oauthRedirectUrl,
       );
     } on AuthException catch (e) {
       if (mounted) {

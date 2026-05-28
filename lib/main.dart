@@ -6,9 +6,9 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:proptrack/core/router/app_router.dart';
 import 'package:proptrack/core/theme/app_theme.dart';
 import 'package:proptrack/core/theme/theme_notifier.dart';
+import 'package:proptrack/core/utils/oauth_callback.dart' as oauth_callback;
 import 'package:proptrack/features/properties/data/models/property_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:web/web.dart' as web;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,20 +40,23 @@ Future<void> main() async {
   );
 
   // Handle the OAuth redirect: when the URL contains ?code=..., exchange the
-  // code for a session and clean the URL before the router runs.
+  // code for a session and clean the URL before the router runs. On native
+  // platforms currentUrl() returns null, so this whole block is skipped.
   if (kIsWeb) {
-    final href = web.window.location.href;
-    final uri = Uri.parse(href);
-    if (uri.queryParameters.containsKey('code')) {
-      try {
-        await Supabase.instance.client.auth.getSessionFromUrl(uri);
-        debugPrint('OAuth code exchange succeeded');
-      } catch (e, st) {
-        debugPrint('OAuth code exchange failed: $e\n$st');
+    final href = oauth_callback.currentUrl();
+    if (href != null) {
+      final uri = Uri.parse(href);
+      if (uri.queryParameters.containsKey('code')) {
+        try {
+          await Supabase.instance.client.auth.getSessionFromUrl(uri);
+          debugPrint('OAuth code exchange succeeded');
+        } catch (e, st) {
+          debugPrint('OAuth code exchange failed: $e\n$st');
+        }
+        // Always strip the query so the router boots on a clean `/` and a
+        // future refresh doesn't re-exchange the (now-spent) code.
+        oauth_callback.cleanCallbackUrl();
       }
-      // Always strip the query so the router boots on a clean `/` and a future
-      // refresh doesn't re-exchange the (now-spent) code.
-      web.window.history.replaceState(null, '', '/');
     }
   }
 

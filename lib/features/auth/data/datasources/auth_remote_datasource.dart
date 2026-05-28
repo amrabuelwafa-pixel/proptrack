@@ -1,3 +1,4 @@
+import 'package:proptrack/core/constants/supabase_constants.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract interface class AuthRemoteDataSource {
@@ -54,7 +55,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<User> signInWithGoogle() async {
     await _supabaseClient.auth.signInWithOAuth(
       OAuthProvider.google,
-      redirectTo: 'http://localhost:3000',
+      redirectTo: SupabaseConstants.oauthRedirectUrl,
     );
     return _supabaseClient.auth.currentUser!;
   }
