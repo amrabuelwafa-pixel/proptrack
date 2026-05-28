@@ -56,29 +56,32 @@ class ProfilePage extends ConsumerWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final isWide = constraints.maxWidth >= 1024;
-          return SingleChildScrollView(
-            physics: const ClampingScrollPhysics(),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1024),
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isWide ? 48 : 16,
-                    vertical: isWide ? 48 : 32,
-                  ),
-                  child: const Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Mobile title (desktop uses topbar)
-                      _MobileTitleHeader(),
-                      _ProfileHeader(),
-                      SizedBox(height: 32),
-                      _MetricsRow(),
-                      SizedBox(height: 32),
-                      _AccountDetailsCard(),
-                      SizedBox(height: 32),
-                      _SupportBanner(),
-                    ],
+          return SafeArea(
+            bottom: false,
+            child: SingleChildScrollView(
+              physics: const ClampingScrollPhysics(),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1024),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isWide ? 48 : 16,
+                      vertical: isWide ? 48 : 32,
+                    ),
+                    child: const Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Mobile title (desktop uses topbar)
+                        _MobileTitleHeader(),
+                        _ProfileHeader(),
+                        SizedBox(height: 32),
+                        _MetricsRow(),
+                        SizedBox(height: 32),
+                        _AccountDetailsCard(),
+                        SizedBox(height: 32),
+                        _SupportBanner(),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -103,10 +106,11 @@ class _MobileTitleHeader extends StatelessWidget {
         child: Text(
           'Profile',
           style: TextStyle(
-            fontSize: 20,
+            fontSize: 24,
             fontWeight: FontWeight.w600,
             color: _onBackground,
-            height: 1.4,
+            letterSpacing: -0.24,
+            height: 1.33,
           ),
         ),
       ),

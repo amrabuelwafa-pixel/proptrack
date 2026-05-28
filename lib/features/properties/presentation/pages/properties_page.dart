@@ -229,38 +229,41 @@ class _PropertiesPageState extends ConsumerState<PropertiesPage> {
   // ─────────────────────── Mobile layout ───────────────────────
 
   Widget _buildMobile(AsyncValue<List<PropertyEntity>> state) {
-    return Stack(
-      children: [
-        SingleChildScrollView(
-          physics: const ClampingScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 24, 16, 96),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildMobileHeader(),
-                const SizedBox(height: 24),
-                _buildMobileSearch(),
-                const SizedBox(height: 20),
-                _buildMobileFilters(),
-                const SizedBox(height: 24),
-                _buildList(state, isWide: false),
-              ],
+    return SafeArea(
+      bottom: false,
+      child: Stack(
+        children: [
+          SingleChildScrollView(
+            physics: const ClampingScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 24, 16, 96),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildMobileHeader(),
+                  const SizedBox(height: 24),
+                  _buildMobileSearch(),
+                  const SizedBox(height: 20),
+                  _buildMobileFilters(),
+                  const SizedBox(height: 24),
+                  _buildList(state, isWide: false),
+                ],
+              ),
             ),
           ),
-        ),
-        Positioned(
-          right: 16,
-          bottom: 16,
-          child: FloatingActionButton(
-            heroTag: 'properties_fab',
-            backgroundColor: _primaryContainer,
-            foregroundColor: _onPrimary,
-            onPressed: _showAddSheet,
-            child: const Icon(Icons.add, size: 28),
+          Positioned(
+            right: 16,
+            bottom: 16,
+            child: FloatingActionButton(
+              heroTag: 'properties_fab',
+              backgroundColor: _primaryContainer,
+              foregroundColor: _onPrimary,
+              onPressed: _showAddSheet,
+              child: const Icon(Icons.add, size: 28),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

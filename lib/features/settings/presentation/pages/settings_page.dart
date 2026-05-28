@@ -130,33 +130,36 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   // ─────────────────────── Mobile layout ───────────────────────
 
   Widget _buildMobile() {
-    return SingleChildScrollView(
-      physics: const ClampingScrollPhysics(),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 24, 16, 96),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildPageHeader(isWide: false),
-            const SizedBox(height: 24),
-            const _SectionLabel(text: 'ACCOUNT'),
-            const SizedBox(height: 12),
-            _accountCard(),
-            const SizedBox(height: 24),
-            const _SectionLabel(text: 'PREFERENCES'),
-            const SizedBox(height: 12),
-            _preferencesCard(),
-            const SizedBox(height: 24),
-            const _SectionLabel(text: 'APPEARANCE'),
-            const SizedBox(height: 12),
-            _appearanceCard(),
-            const SizedBox(height: 24),
-            const _SectionLabel(text: 'SYSTEM'),
-            const SizedBox(height: 12),
-            _systemCard(),
-            const SizedBox(height: 24),
-            _logoutButton(),
-          ],
+    return SafeArea(
+      bottom: false,
+      child: SingleChildScrollView(
+        physics: const ClampingScrollPhysics(),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 24, 16, 96),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildPageHeader(isWide: false),
+              const SizedBox(height: 24),
+              const _SectionLabel(text: 'ACCOUNT'),
+              const SizedBox(height: 12),
+              _accountCard(),
+              const SizedBox(height: 24),
+              const _SectionLabel(text: 'PREFERENCES'),
+              const SizedBox(height: 12),
+              _preferencesCard(),
+              const SizedBox(height: 24),
+              const _SectionLabel(text: 'APPEARANCE'),
+              const SizedBox(height: 12),
+              _appearanceCard(),
+              const SizedBox(height: 24),
+              const _SectionLabel(text: 'SYSTEM'),
+              const SizedBox(height: 12),
+              _systemCard(),
+              const SizedBox(height: 24),
+              _logoutButton(),
+            ],
+          ),
         ),
       ),
     );

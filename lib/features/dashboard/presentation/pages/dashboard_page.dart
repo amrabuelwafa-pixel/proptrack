@@ -5,6 +5,7 @@ import 'package:proptrack/features/dashboard/domain/entities/dashboard_metrics.d
 import 'package:proptrack/features/dashboard/domain/entities/upcoming_installment.dart';
 import 'package:proptrack/features/dashboard/presentation/providers/dashboard_providers.dart';
 import 'package:proptrack/features/dashboard/presentation/widgets/monthly_payments_chart.dart';
+import 'package:proptrack/features/shell/presentation/pages/app_shell.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 String _formatEgpCompact(double amount) {
@@ -183,21 +184,29 @@ class _Hero extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: DashboardPage._navy,
-            shape: BoxShape.circle,
-            boxShadow: DashboardPage._level2Shadow,
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            initial,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
+        Material(
+          color: Colors.transparent,
+          shape: const CircleBorder(),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: () => AppShellScope.maybeOf(context)?.goToTab(2),
+            child: Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: DashboardPage._navy,
+                shape: BoxShape.circle,
+                boxShadow: DashboardPage._level2Shadow,
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                initial,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ),
         ),
@@ -1027,7 +1036,8 @@ class _PromoCardDesktop extends StatelessWidget {
                     SizedBox(
                       height: 44,
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () =>
+                            AppShellScope.maybeOf(context)?.goToTab(1),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: DashboardPage._navy,
                           foregroundColor: Colors.white,
@@ -1142,23 +1152,26 @@ class _NarrowDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      physics: const ClampingScrollPhysics(),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: const [
-            _MobileHeader(),
-            SizedBox(height: 24),
-            _MetricsGridMobile(),
-            SizedBox(height: 32),
-            MonthlyPaymentsChart(),
-            SizedBox(height: 32),
-            _UpcomingInstallmentsMobile(),
-            SizedBox(height: 32),
-            _PromoCardMobile(),
-          ],
+    return SafeArea(
+      bottom: false,
+      child: SingleChildScrollView(
+        physics: const ClampingScrollPhysics(),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: const [
+              _MobileHeader(),
+              SizedBox(height: 24),
+              _MetricsGridMobile(),
+              SizedBox(height: 32),
+              MonthlyPaymentsChart(),
+              SizedBox(height: 32),
+              _UpcomingInstallmentsMobile(),
+              SizedBox(height: 32),
+              _PromoCardMobile(),
+            ],
+          ),
         ),
       ),
     );
@@ -1211,20 +1224,28 @@ class _MobileHeader extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 16),
-        Container(
-          width: 40,
-          height: 40,
-          decoration: const BoxDecoration(
-            color: Color(0xFF1A2B4A),
-            shape: BoxShape.circle,
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            initial,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
+        Material(
+          color: Colors.transparent,
+          shape: const CircleBorder(),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: () => AppShellScope.maybeOf(context)?.goToTab(2),
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: const BoxDecoration(
+                color: Color(0xFF1A2B4A),
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                initial,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ),
         ),
@@ -1634,7 +1655,7 @@ class _PromoCardMobile extends StatelessWidget {
             Align(
               alignment: Alignment.centerLeft,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () => AppShellScope.maybeOf(context)?.goToTab(1),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: DashboardPage._secondaryFixedDim,
                   foregroundColor: DashboardPage._onSecondaryFixed,
