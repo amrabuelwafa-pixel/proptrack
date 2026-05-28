@@ -17,6 +17,5 @@ abstract final class SupabaseConstants {
       'io.supabase.proptrack://login-callback/';
 
   /// Redirect URL for the OAuth login callback, chosen per platform.
-  static String get oauthRedirectUrl =>
-      kIsWeb ? _webRedirect : _nativeRedirect;
+  static String get oauthRedirectUrl => kIsWeb ? _webRedirect : _nativeRedirect;
 }
