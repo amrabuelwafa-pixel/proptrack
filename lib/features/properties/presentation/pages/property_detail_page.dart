@@ -768,25 +768,24 @@ class _PropertyDetailPageState extends ConsumerState<PropertyDetailPage> {
   // ─────────────────────── Action buttons ───────────────────────
 
   Widget _buildActionButtons({required bool isWide}) {
-    final buttons = <Widget>[
-      _PrimaryActionButton(
-        icon: isWide ? Icons.visibility_outlined : Icons.add,
-        label: isWide ? 'View Plan' : 'Add Installment',
-        onTap: () {},
-      ),
-      _SecondaryActionButton(
-        icon: Icons.auto_awesome_outlined,
-        label: 'Auto-Detect',
-        onTap: () {},
-      ),
-      _SecondaryActionButton(
-        icon: Icons.account_balance_wallet_outlined,
-        label: 'Payment Plan',
-        onTap: () {},
-      ),
-    ];
-
     if (isWide) {
+      final buttons = <Widget>[
+        _PrimaryActionButton(
+          icon: Icons.visibility_outlined,
+          label: 'View Plan',
+          onTap: () {},
+        ),
+        _SecondaryActionButton(
+          icon: Icons.auto_awesome_outlined,
+          label: 'Auto-Detect',
+          onTap: () {},
+        ),
+        _SecondaryActionButton(
+          icon: Icons.account_balance_wallet_outlined,
+          label: 'Payment Plan',
+          onTap: () {},
+        ),
+      ];
       return Row(
         children: [
           for (var i = 0; i < buttons.length; i++) ...[
@@ -797,16 +796,37 @@ class _PropertyDetailPageState extends ConsumerState<PropertyDetailPage> {
       );
     }
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          for (var i = 0; i < buttons.length; i++) ...[
-            if (i > 0) const SizedBox(width: 12),
-            buttons[i],
+    // Mobile: Auto-Detect + Payment Plan in a row, Add Installment full-width
+    // below them.
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _SecondaryActionButton(
+                icon: Icons.auto_awesome_outlined,
+                label: 'Auto-Detect',
+                onTap: () {},
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _SecondaryActionButton(
+                icon: Icons.account_balance_wallet_outlined,
+                label: 'Payment Plan',
+                onTap: () {},
+              ),
+            ),
           ],
-        ],
-      ),
+        ),
+        const SizedBox(height: 12),
+        _PrimaryActionButton(
+          icon: Icons.add,
+          label: 'Add Installment',
+          onTap: () {},
+        ),
+      ],
     );
   }
 
