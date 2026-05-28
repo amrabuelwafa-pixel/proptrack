@@ -1,6 +1,8 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:proptrack/features/properties/domain/entities/property_entity.dart';
 import 'package:proptrack/features/properties/domain/repositories/property_repository.dart';
@@ -449,9 +451,11 @@ class _PropertiesPageState extends ConsumerState<PropertiesPage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) => _AddPropertySheet(
-        onSaved: (params) async {
+        onSaved: (params, files) async {
           Navigator.pop(context);
-          await ref.read(propertyNotifierProvider.notifier).create(params);
+          await ref
+              .read(propertyNotifierProvider.notifier)
+              .createWithFiles(params, files);
         },
       ),
     );
@@ -1285,18 +1289,22 @@ NumberFormat _currencyFor(String currency) {
 class _AddPropertySheet extends ConsumerStatefulWidget {
   const _AddPropertySheet({required this.onSaved});
 
-  final Future<void> Function(CreatePropertyParams) onSaved;
+  final Future<void> Function(CreatePropertyParams, List<XFile>) onSaved;
 
   @override
   ConsumerState<_AddPropertySheet> createState() => _AddPropertySheetState();
 }
 
 class _AddPropertySheetState extends ConsumerState<_AddPropertySheet> {
+  static const _maxFiles = 10;
+
   final _name = TextEditingController();
   final _developer = TextEditingController();
   final _location = TextEditingController();
   final _price = TextEditingController();
   String _currency = 'EGP';
+  final List<XFile> _files = [];
+  bool _saving = false;
 
   @override
   void dispose() {
@@ -1305,6 +1313,42 @@ class _AddPropertySheetState extends ConsumerState<_AddPropertySheet> {
     _location.dispose();
     _price.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickFiles() async {
+    final result = await FilePicker.platform.pickFiles(
+      allowMultiple: true,
+      withData: true,
+      type: FileType.custom,
+      allowedExtensions: const [
+        'pdf',
+        'jpg',
+        'jpeg',
+        'png',
+        'webp',
+        'xls',
+        'xlsx',
+      ],
+    );
+    if (result == null) return;
+
+    final picked = <XFile>[];
+    for (final f in result.files) {
+      if (f.path != null) {
+        picked.add(XFile(f.path!, name: f.name, bytes: f.bytes));
+      } else if (f.bytes != null) {
+        picked.add(XFile.fromData(f.bytes!, name: f.name));
+      }
+    }
+
+    setState(() {
+      final remaining = _maxFiles - _files.length;
+      _files.addAll(picked.take(remaining));
+    });
+  }
+
+  void _removeFile(int index) {
+    setState(() => _files.removeAt(index));
   }
 
   @override
@@ -1377,23 +1421,68 @@ class _AddPropertySheetState extends ConsumerState<_AddPropertySheet> {
                 ],
               ),
               const SizedBox(height: 20),
+              const Text(
+                'Payment Plan (optional)',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: _onSurface,
+                ),
+              ),
+              const SizedBox(height: 2),
+              const Text(
+                'Upload PDF, images or Excel files (max 10)',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: _onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 8),
+              _UploadDropZone(
+                enabled: _files.length < _maxFiles,
+                onTap: _pickFiles,
+              ),
+              if (_files.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (var i = 0; i < _files.length; i++)
+                      _FileChip(
+                        name: _files[i].name,
+                        onRemove: () => _removeFile(i),
+                      ),
+                  ],
+                ),
+              ],
+              const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
                 height: 48,
                 child: ElevatedButton(
-                  onPressed: () async {
-                    if (_name.text.isEmpty || _price.text.isEmpty) return;
-                    final price = double.tryParse(_price.text);
-                    if (price == null || price <= 0) return;
-                    await widget.onSaved(CreatePropertyParams(
-                      name: _name.text,
-                      developer:
-                          _developer.text.isEmpty ? null : _developer.text,
-                      location: _location.text.isEmpty ? null : _location.text,
-                      totalPrice: price,
-                      currency: _currency,
-                    ));
-                  },
+                  onPressed: _saving
+                      ? null
+                      : () async {
+                          if (_name.text.isEmpty || _price.text.isEmpty) return;
+                          final price = double.tryParse(_price.text);
+                          if (price == null || price <= 0) return;
+                          setState(() => _saving = true);
+                          await widget.onSaved(
+                            CreatePropertyParams(
+                              name: _name.text,
+                              developer: _developer.text.isEmpty
+                                  ? null
+                                  : _developer.text,
+                              location: _location.text.isEmpty
+                                  ? null
+                                  : _location.text,
+                              totalPrice: price,
+                              currency: _currency,
+                            ),
+                            List<XFile>.from(_files),
+                          );
+                        },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _navy,
                     foregroundColor: _onPrimary,
@@ -1402,19 +1491,170 @@ class _AddPropertySheetState extends ConsumerState<_AddPropertySheet> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: const Text(
-                    'Add Property',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.6,
-                    ),
-                  ),
+                  child: _saving
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(_onPrimary),
+                          ),
+                        )
+                      : const Text(
+                          'Add Property',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.6,
+                          ),
+                        ),
                 ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _UploadDropZone extends StatelessWidget {
+  const _UploadDropZone({required this.enabled, required this.onTap});
+
+  final bool enabled;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: enabled ? onTap : null,
+      borderRadius: BorderRadius.circular(8),
+      child: DottedBorderBox(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.upload_file_outlined,
+                size: 28,
+                color: enabled ? _onSurfaceVariant : _outlineVariant,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                enabled ? 'Tap to upload' : 'Maximum files reached',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: enabled ? _onSurfaceVariant : _outlineVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Container with a dashed outline drawn via CustomPaint (no extra deps).
+class DottedBorderBox extends StatelessWidget {
+  const DottedBorderBox({required this.child, super.key});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: _DashedBorderPainter(),
+      child: SizedBox(
+        width: double.infinity,
+        child: child,
+      ),
+    );
+  }
+}
+
+class _DashedBorderPainter extends CustomPainter {
+  static const _radius = 8.0;
+  static const _dash = 6.0;
+  static const _gap = 4.0;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = _outlineVariant
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke;
+
+    final rrect = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      const Radius.circular(_radius),
+    );
+    final path = Path()..addRRect(rrect);
+
+    for (final metric in path.computeMetrics()) {
+      var distance = 0.0;
+      while (distance < metric.length) {
+        final next = distance + _dash;
+        canvas.drawPath(
+          metric.extractPath(distance, next.clamp(0, metric.length)),
+          paint,
+        );
+        distance = next + _gap;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _FileChip extends StatelessWidget {
+  const _FileChip({required this.name, required this.onRemove});
+
+  final String name;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.only(left: 12, right: 4, top: 4, bottom: 4),
+      decoration: BoxDecoration(
+        color: _surfaceContainerLow,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: _outlineVariant),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.insert_drive_file_outlined,
+            size: 16,
+            color: _onSurfaceVariant,
+          ),
+          const SizedBox(width: 6),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 160),
+            child: Text(
+              name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 13,
+                color: _onSurface,
+              ),
+            ),
+          ),
+          IconButton(
+            onPressed: onRemove,
+            icon: const Icon(Icons.close, size: 16),
+            color: _onSurfaceVariant,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+            tooltip: 'Remove',
+          ),
+        ],
       ),
     );
   }

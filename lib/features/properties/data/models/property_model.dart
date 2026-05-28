@@ -12,6 +12,7 @@ class PropertyModel extends PropertyEntity {
     required super.currency,
     super.handoverDate,
     super.notes,
+    super.paymentPlanFiles = const [],
     required super.createdAt,
     required super.updatedAt,
     super.paidAmount = 0,
@@ -46,6 +47,8 @@ class PropertyModel extends PropertyEntity {
           ? DateTime.parse(json['handover_date'] as String)
           : null,
       notes: json['notes'] as String?,
+      paymentPlanFiles:
+          (json['payment_plan_files'] as List<dynamic>?)?.cast<String>() ?? [],
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
       paidAmount: paidAmount,
@@ -64,9 +67,45 @@ class PropertyModel extends PropertyEntity {
         'currency': currency,
         'handover_date': handoverDate?.toIso8601String(),
         'notes': notes,
+        'payment_plan_files': paymentPlanFiles,
         'created_at': createdAt.toIso8601String(),
         'updated_at': updatedAt.toIso8601String(),
       };
+
+  PropertyModel copyWith({
+    String? id,
+    String? userId,
+    String? name,
+    String? developer,
+    String? location,
+    double? totalPrice,
+    String? currency,
+    DateTime? handoverDate,
+    String? notes,
+    List<String>? paymentPlanFiles,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    double? paidAmount,
+    int? totalInstallments,
+    int? paidInstallments,
+  }) =>
+      PropertyModel(
+        id: id ?? this.id,
+        userId: userId ?? this.userId,
+        name: name ?? this.name,
+        developer: developer ?? this.developer,
+        location: location ?? this.location,
+        totalPrice: totalPrice ?? this.totalPrice,
+        currency: currency ?? this.currency,
+        handoverDate: handoverDate ?? this.handoverDate,
+        notes: notes ?? this.notes,
+        paymentPlanFiles: paymentPlanFiles ?? this.paymentPlanFiles,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+        paidAmount: paidAmount ?? this.paidAmount,
+        totalInstallments: totalInstallments ?? this.totalInstallments,
+        paidInstallments: paidInstallments ?? this.paidInstallments,
+      );
 
   PropertyEntity toEntity() => PropertyEntity(
         id: id,
@@ -78,6 +117,7 @@ class PropertyModel extends PropertyEntity {
         currency: currency,
         handoverDate: handoverDate,
         notes: notes,
+        paymentPlanFiles: paymentPlanFiles,
         createdAt: createdAt,
         updatedAt: updatedAt,
         paidAmount: paidAmount,
@@ -102,6 +142,7 @@ class PropertyModelAdapter extends TypeAdapter<PropertyModel> {
       currency: reader.readString(),
       handoverDate: reader.read() as DateTime?,
       notes: reader.read() as String?,
+      paymentPlanFiles: (reader.read() as List<dynamic>?)?.cast<String>() ?? [],
       createdAt: reader.read() as DateTime,
       updatedAt: reader.read() as DateTime,
       paidAmount: reader.readDouble(),
@@ -121,6 +162,7 @@ class PropertyModelAdapter extends TypeAdapter<PropertyModel> {
     writer.writeString(obj.currency);
     writer.write(obj.handoverDate);
     writer.write(obj.notes);
+    writer.write(obj.paymentPlanFiles);
     writer.write(obj.createdAt);
     writer.write(obj.updatedAt);
     writer.writeDouble(obj.paidAmount);

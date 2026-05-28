@@ -1,4 +1,5 @@
 import 'package:fpdart/fpdart.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:proptrack/core/errors/failures.dart';
 import 'package:proptrack/features/properties/data/datasources/property_local_datasource.dart';
 import 'package:proptrack/features/properties/data/datasources/property_remote_datasource.dart';
@@ -58,6 +59,7 @@ class PropertyRepositoryImpl implements PropertyRepository {
         currency: params.currency,
         handoverDate: params.handoverDate,
         notes: params.notes,
+        paymentPlanFiles: params.paymentPlanFiles,
       );
       return Right(property.toEntity());
     } on PostgrestException catch (e) {
@@ -81,6 +83,7 @@ class PropertyRepositoryImpl implements PropertyRepository {
         currency: params.currency,
         handoverDate: params.handoverDate,
         notes: params.notes,
+        paymentPlanFiles: params.paymentPlanFiles,
       );
       return Right(property.toEntity());
     } on PostgrestException catch (e) {
@@ -99,6 +102,26 @@ class PropertyRepositoryImpl implements PropertyRepository {
       return Left(ServerFailure(e.message));
     } on Exception catch (e) {
       return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> uploadPaymentPlanFile(
+    String propertyId,
+    String userId,
+    XFile file,
+  ) async {
+    try {
+      final path = await _remoteDataSource.uploadPaymentPlanFile(
+        propertyId,
+        userId,
+        file,
+      );
+      return Right(path);
+    } on StorageException catch (e) {
+      return Left(StorageFailure(e.message));
+    } on Exception catch (e) {
+      return Left(StorageFailure(e.toString()));
     }
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:proptrack/core/providers/supabase_provider.dart';
 import 'package:proptrack/features/properties/data/datasources/property_local_datasource.dart';
 import 'package:proptrack/features/properties/data/datasources/property_remote_datasource.dart';
@@ -89,6 +90,55 @@ class _PropertyNotifier
         },
         (_) {
           _load();
+          return true;
+        },
+      );
+    } on Exception {
+      return false;
+    }
+  }
+
+  /// Creates the property, uploads each picked payment-plan file under the new
+  /// property's id, then patches the stored paths back onto the property.
+  Future<bool> createWithFiles(
+    CreatePropertyParams params,
+    List<XFile> files,
+  ) async {
+    if (files.isEmpty) return create(params);
+    try {
+      final repository = _ref.read(propertyRepositoryProvider);
+      final created = await repository.createProperty(params);
+      return await created.fold(
+        (failure) async {
+          state = AsyncError<List<PropertyEntity>>(failure, StackTrace.current);
+          return false;
+        },
+        (property) async {
+          final paths = <String>[];
+          for (final file in files) {
+            final uploaded = await repository.uploadPaymentPlanFile(
+              property.id,
+              property.userId,
+              file,
+            );
+            uploaded.fold((_) {}, paths.add);
+          }
+          if (paths.isNotEmpty) {
+            await repository.updateProperty(
+              UpdatePropertyParams(
+                id: property.id,
+                name: property.name,
+                developer: property.developer,
+                location: property.location,
+                totalPrice: property.totalPrice,
+                currency: property.currency,
+                handoverDate: property.handoverDate,
+                notes: property.notes,
+                paymentPlanFiles: paths,
+              ),
+            );
+          }
+          await _load();
           return true;
         },
       );

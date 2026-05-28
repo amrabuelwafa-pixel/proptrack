@@ -1,4 +1,5 @@
 import 'package:fpdart/fpdart.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:proptrack/core/errors/failures.dart';
 import 'package:proptrack/features/properties/domain/entities/property_entity.dart';
 
@@ -12,6 +13,11 @@ abstract interface class PropertyRepository {
     UpdatePropertyParams params,
   );
   Future<Either<Failure, Unit>> deleteProperty(String id);
+  Future<Either<Failure, String>> uploadPaymentPlanFile(
+    String propertyId,
+    String userId,
+    XFile file,
+  );
 }
 
 class CreatePropertyParams {
@@ -22,6 +28,7 @@ class CreatePropertyParams {
   final String currency;
   final DateTime? handoverDate;
   final String? notes;
+  final List<String> paymentPlanFiles;
 
   CreatePropertyParams({
     required this.name,
@@ -31,6 +38,7 @@ class CreatePropertyParams {
     required this.currency,
     this.handoverDate,
     this.notes,
+    this.paymentPlanFiles = const [],
   });
 }
 
@@ -43,6 +51,7 @@ class UpdatePropertyParams {
   final String currency;
   final DateTime? handoverDate;
   final String? notes;
+  final List<String> paymentPlanFiles;
 
   UpdatePropertyParams({
     required this.id,
@@ -53,5 +62,6 @@ class UpdatePropertyParams {
     required this.currency,
     this.handoverDate,
     this.notes,
+    this.paymentPlanFiles = const [],
   });
 }

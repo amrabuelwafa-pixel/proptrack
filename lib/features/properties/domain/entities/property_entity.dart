@@ -10,6 +10,7 @@ class PropertyEntity extends Equatable {
   final String currency;
   final DateTime? handoverDate;
   final String? notes;
+  final List<String> paymentPlanFiles;
   final DateTime createdAt;
   final DateTime updatedAt;
   final double paidAmount;
@@ -26,6 +27,7 @@ class PropertyEntity extends Equatable {
     required this.currency,
     this.handoverDate,
     this.notes,
+    this.paymentPlanFiles = const [],
     required this.createdAt,
     required this.updatedAt,
     this.paidAmount = 0,
@@ -44,6 +46,7 @@ class PropertyEntity extends Equatable {
         currency,
         handoverDate,
         notes,
+        paymentPlanFiles,
         createdAt,
         updatedAt,
         paidAmount,

@@ -1,3 +1,4 @@
+import 'package:image_picker/image_picker.dart';
 import 'package:proptrack/features/properties/data/models/property_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -12,6 +13,7 @@ abstract interface class PropertyRemoteDataSource {
     required String currency,
     DateTime? handoverDate,
     String? notes,
+    List<String> paymentPlanFiles,
   });
   Future<PropertyModel> updateProperty({
     required String id,
@@ -22,8 +24,17 @@ abstract interface class PropertyRemoteDataSource {
     required String currency,
     DateTime? handoverDate,
     String? notes,
+    List<String> paymentPlanFiles,
   });
   Future<void> deleteProperty(String id);
+
+  /// Uploads a payment-plan file to the `property-files` bucket and returns
+  /// the stored object path.
+  Future<String> uploadPaymentPlanFile(
+    String propertyId,
+    String userId,
+    XFile file,
+  );
 }
 
 class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
@@ -71,6 +82,7 @@ class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
     required String currency,
     DateTime? handoverDate,
     String? notes,
+    List<String> paymentPlanFiles = const [],
   }) async {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) throw Exception('User not authenticated');
@@ -86,6 +98,10 @@ class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
           'currency': currency,
           'handover_date': handoverDate?.toIso8601String(),
           'notes': notes,
+          // Only send when files are attached so a property without a payment
+          // plan never depends on the optional `payment_plan_files` column.
+          if (paymentPlanFiles.isNotEmpty)
+            'payment_plan_files': paymentPlanFiles,
         })
         .select('*, installments(id, amount, is_paid)')
         .single();
@@ -103,6 +119,7 @@ class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
     required String currency,
     DateTime? handoverDate,
     String? notes,
+    List<String> paymentPlanFiles = const [],
   }) async {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) throw Exception('User not authenticated');
@@ -117,6 +134,8 @@ class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
           'currency': currency,
           'handover_date': handoverDate?.toIso8601String(),
           'notes': notes,
+          if (paymentPlanFiles.isNotEmpty)
+            'payment_plan_files': paymentPlanFiles,
         })
         .eq('id', id)
         .eq('user_id', userId)
@@ -136,5 +155,24 @@ class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
         .delete()
         .eq('id', id)
         .eq('user_id', userId);
+  }
+
+  @override
+  Future<String> uploadPaymentPlanFile(
+    String propertyId,
+    String userId,
+    XFile file,
+  ) async {
+    final bytes = await file.readAsBytes();
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final path = '$userId/$propertyId/${timestamp}_${file.name}';
+
+    await _client.storage.from('property-files').uploadBinary(
+          path,
+          bytes,
+          fileOptions: const FileOptions(upsert: true),
+        );
+
+    return path;
   }
 }
