@@ -12,6 +12,28 @@ class AppShell extends StatefulWidget {
   State<AppShell> createState() => _AppShellState();
 }
 
+/// Exposes the app shell's tab-switch callback to descendant pages so deep
+/// widgets (e.g. dashboard CTAs) can navigate between tabs without
+/// prop-drilling.
+class AppShellScope extends InheritedWidget {
+  const AppShellScope({
+    required this.goToTab,
+    required super.child,
+    super.key,
+  });
+
+  /// Switch the bottom/side nav to the tab at [index]
+  /// (0 = Dashboard, 1 = Properties, 2 = Profile, 3 = Settings).
+  final void Function(int index) goToTab;
+
+  static AppShellScope? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<AppShellScope>();
+
+  @override
+  bool updateShouldNotify(AppShellScope oldWidget) =>
+      goToTab != oldWidget.goToTab;
+}
+
 class _AppShellState extends State<AppShell> {
   int _selectedIndex = 0;
 
@@ -56,50 +78,53 @@ class _AppShellState extends State<AppShell> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isMobile = constraints.maxWidth < 768;
+    return AppShellScope(
+      goToTab: _onNavTapped,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isMobile = constraints.maxWidth < 768;
 
-        if (isMobile) {
+          if (isMobile) {
+            return Scaffold(
+              backgroundColor: _surface,
+              body: _pages[_selectedIndex],
+              bottomNavigationBar: BottomNavigationBar(
+                type: BottomNavigationBarType.fixed,
+                currentIndex: _selectedIndex,
+                onTap: _onNavTapped,
+                backgroundColor: Colors.white,
+                selectedItemColor: _navy,
+                unselectedItemColor: _onSurfaceVariant,
+                elevation: 8,
+                items: _navItems
+                    .map(
+                      (item) => BottomNavigationBarItem(
+                        icon: Icon(item.icon),
+                        activeIcon: Icon(item.activeIcon),
+                        label: item.label,
+                      ),
+                    )
+                    .toList(),
+              ),
+            );
+          }
+
           return Scaffold(
             backgroundColor: _surface,
-            body: _pages[_selectedIndex],
-            bottomNavigationBar: BottomNavigationBar(
-              type: BottomNavigationBarType.fixed,
-              currentIndex: _selectedIndex,
-              onTap: _onNavTapped,
-              backgroundColor: Colors.white,
-              selectedItemColor: _navy,
-              unselectedItemColor: _onSurfaceVariant,
-              elevation: 8,
-              items: _navItems
-                  .map(
-                    (item) => BottomNavigationBarItem(
-                      icon: Icon(item.icon),
-                      activeIcon: Icon(item.activeIcon),
-                      label: item.label,
-                    ),
-                  )
-                  .toList(),
+            body: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _Sidebar(
+                  selectedIndex: _selectedIndex,
+                  items: _navItems,
+                  onTap: _onNavTapped,
+                ),
+                Expanded(child: _pages[_selectedIndex]),
+              ],
             ),
           );
-        }
-
-        return Scaffold(
-          backgroundColor: _surface,
-          body: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _Sidebar(
-                selectedIndex: _selectedIndex,
-                items: _navItems,
-                onTap: _onNavTapped,
-              ),
-              Expanded(child: _pages[_selectedIndex]),
-            ],
-          ),
-        );
-      },
+        },
+      ),
     );
   }
 }
@@ -233,7 +258,7 @@ class _Sidebar extends StatelessWidget {
                   Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () {},
+                      onTap: () => onTap(2),
                       borderRadius: BorderRadius.circular(8),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
